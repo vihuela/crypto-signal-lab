@@ -1,0 +1,12 @@
+{
+  "name": "crypto-signal-lab",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "lint:web": "npm --prefix apps/web run lint",
+    "typecheck:web": "npm --prefix apps/web run typecheck",
+    "dev:api": "cd apps/api && .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
+    "bootstrap:api": "cd apps/api && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+    "dev": "printf 'Run `npm run dev:web` and `npm run dev:api` in separate terminals.\\n'"
+  }
+}

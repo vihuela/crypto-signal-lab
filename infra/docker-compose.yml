@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: crypto-signal-lab-postgres
+    environment:
+      POSTGRES_DB: crypto_signal_lab
+      POSTGRES_USER: crypto_signal_lab
+      POSTGRES_PASSWORD: crypto_signal_lab
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../postgres-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ../apps/api
+    container_name: crypto-signal-lab-api
+    environment:
+      CSL_APP_NAME: Crypto Signal Lab API
+      CSL_APP_ENV: local
+      CSL_APP_PORT: 8000
+      CSL_ALLOWED_ORIGINS: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: ../apps/web
+    container_name: crypto-signal-lab-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
