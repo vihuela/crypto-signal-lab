@@ -16,6 +16,7 @@ import {
   timeframeOptions,
 } from "@/features/dashboard/dashboard-config";
 import { ControlSelect } from "@/features/dashboard/components/control-select";
+import { HeroMarioTitle } from "@/features/dashboard/components/hero-mario-title";
 import { LanguageToggle } from "@/features/dashboard/components/language-toggle";
 import { MarketStageChart } from "@/features/dashboard/components/market-stage-chart";
 import { StrategyLeaderboard } from "@/features/dashboard/components/strategy-leaderboard";
@@ -43,6 +44,7 @@ const LIVE_REFRESH_MS = 15_000;
 
 export function DashboardShell() {
   const { locale, setLocale, dictionary } = useLocale();
+  const isZh = locale === "zh";
   const [source, setSource] = useState<SourceId>(defaultSource);
   const [symbol, setSymbol] = useState(defaultSymbol);
   const [timeframe, setTimeframe] = useState<Timeframe>(defaultTimeframe);
@@ -287,28 +289,34 @@ export function DashboardShell() {
     <main className="data-grid min-h-screen px-5 py-6 text-[#f5eee4] md:px-8 xl:px-10">
       <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-8">
         <header className="flex flex-col gap-4 rounded-[2rem] border border-white/8 bg-black/22 px-6 py-6 shadow-[0_20px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl md:px-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-3xl xl:max-w-4xl">
               <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-white/54">
-                <span className="rounded-full border border-white/10 px-3 py-1">
+                <span
+                  className={`rounded-full border border-white/10 px-3 py-1 ${
+                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
+                  }`}
+                >
                   {marketCopy.nav.researchTerminal}
                 </span>
-                <span className="rounded-full border border-white/10 px-3 py-1">
+                <span
+                  className={`rounded-full border border-white/10 px-3 py-1 ${
+                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
+                  }`}
+                >
                   {marketCopy.nav.spotOnly}
                 </span>
-                <span className="rounded-full border border-white/10 px-3 py-1">
+                <span
+                  className={`rounded-full border border-white/10 px-3 py-1 ${
+                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
+                  }`}
+                >
                   {marketCopy.nav.timeframes}
                 </span>
               </div>
-              <h1 className="display-face max-w-4xl text-4xl leading-[0.95] tracking-[-0.04em] text-[#f8f3ec] sm:text-5xl lg:text-6xl">
-                {marketCopy.hero.title}
-                <span className="block text-white/52">
-                  {marketCopy.hero.subtitle}
-                </span>
-              </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-white/62">
-                {marketCopy.hero.description}
-              </p>
+              <div className="mt-1 max-w-4xl">
+                <HeroMarioTitle title={marketCopy.hero.title} />
+              </div>
             </div>
 
             <div className="self-start">
@@ -320,55 +328,70 @@ export function DashboardShell() {
             </div>
           </div>
 
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(300px,0.7fr)]">
-            {primaryReplayMetrics.map((card) => (
-              <article
-                key={card.label}
-                className="rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] px-5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:px-6 md:py-5"
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(640px,1.08fr)] xl:items-center">
+            <div className="xl:pt-5">
+              <p
+                lang={isZh ? "zh-CN" : undefined}
+                className={`max-w-[46ch] text-white/62 ${
+                  isZh
+                    ? "cjk-copy text-[1.02rem] leading-[1.68] tracking-normal"
+                    : "text-lg leading-8 tracking-[0.005em]"
+                }`}
               >
-                <p className="text-[0.7rem] uppercase tracking-[0.24em] text-white/34">
-                  {card.label}
-                </p>
-                <p className="mt-3 text-[2.2rem] font-semibold leading-none tracking-[-0.04em] text-[#f8f2e8] md:text-[2.85rem]">
-                  {card.value}
-                </p>
-                <div className="mt-4 space-y-1.5">
-                  {card.lines.map((line, index) => (
-                    <p
-                      key={line}
-                      className={`leading-5 ${
-                        index === 0
-                          ? "text-[1rem] text-white/68"
-                          : "text-[0.92rem] text-white/48"
-                      }`}
-                    >
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              </article>
-            ))}
+                {marketCopy.hero.description}
+              </p>
+            </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:items-stretch">
+              {primaryReplayMetrics.map((card) => (
+                <article
+                  key={card.label}
+                  className={`rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] px-5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:px-6 md:py-5 xl:rounded-[1.55rem] xl:px-4 xl:py-4 ${
+                    primaryReplayMetrics.length === 1 ? "sm:col-span-2 xl:col-span-4" : ""
+                  }`}
+                >
+                  <p className="text-[0.7rem] uppercase tracking-[0.24em] text-white/34">
+                    {card.label}
+                  </p>
+                  <p className="mt-3 text-[2.05rem] font-semibold leading-none tracking-[-0.04em] text-[#f8f2e8] md:text-[2.45rem] xl:text-[1.9rem] 2xl:text-[2.15rem]">
+                    {card.value}
+                  </p>
+                  <div className="mt-4 space-y-1.5 xl:mt-3">
+                    {card.lines.map((line, index) => (
+                      <p
+                        key={line}
+                        className={`leading-5 xl:leading-[1.35] ${
+                          index === 0
+                            ? "text-[1rem] text-white/68 xl:text-[0.93rem]"
+                            : "text-[0.92rem] text-white/48 xl:text-[0.86rem]"
+                        }`}
+                      >
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </article>
+              ))}
+
               {secondaryReplayMetrics.map((card) => (
-                  <article
-                    key={card.label}
-                    className="rounded-[1.5rem] border border-white/8 bg-white/4 px-4 py-3 md:px-5 md:py-4"
-                  >
-                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/36">
-                      {card.label}
-                    </p>
-                    <p className="mt-2 text-[1.65rem] font-semibold leading-none tracking-[-0.03em] text-[#f8f2e8] md:text-[1.8rem]">
-                      {card.value}
-                    </p>
-                    <div className="mt-2 space-y-1">
-                      {card.lines.map((line) => (
-                        <p key={line} className="text-[0.92rem] leading-5 text-white/52">
-                          {line}
-                        </p>
-                      ))}
-                    </div>
-                  </article>
+                <article
+                  key={card.label}
+                  className="rounded-[1.5rem] border border-white/8 bg-white/4 px-4 py-3 md:px-5 md:py-4 xl:rounded-[1.45rem] xl:px-4 xl:py-4"
+                >
+                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/36">
+                    {card.label}
+                  </p>
+                  <p className="mt-2 text-[1.65rem] font-semibold leading-none tracking-[-0.03em] text-[#f8f2e8] md:text-[1.8rem] xl:text-[1.55rem] 2xl:text-[1.72rem]">
+                    {card.value}
+                  </p>
+                  <div className="mt-2 space-y-1 xl:mt-3">
+                    {card.lines.map((line) => (
+                      <p key={line} className="text-[0.92rem] leading-5 text-white/52 xl:text-[0.86rem] xl:leading-[1.35]">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </article>
               ))}
             </div>
           </div>

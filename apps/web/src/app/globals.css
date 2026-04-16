@@ -14,13 +14,26 @@
   --accent-blue: #7ea3ff;
   --accent-copper: #cb8a5b;
   --accent-mint: #a8d8c4;
+  --font-body:
+    "Source Sans 3 Variable",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    "Noto Sans CJK SC",
+    sans-serif;
+  --font-cjk:
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    "Noto Sans CJK SC",
+    sans-serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Source Sans 3 Variable", sans-serif;
-  --font-mono: "Source Sans 3 Variable", sans-serif;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-body);
 }
 
 * {
@@ -37,7 +50,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Source Sans 3 Variable", sans-serif;
+  font-family: var(--font-body);
   min-height: 100vh;
 }
 
@@ -55,9 +68,104 @@ a {
   font-family: "Familjen Grotesk Variable", sans-serif;
 }
 
+.cjk-display {
+  font-family: var(--font-cjk);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  line-break: strict;
+}
+
+.cjk-copy {
+  font-family: var(--font-body);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  word-break: keep-all;
+  line-break: strict;
+}
+
 .data-grid {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+.hero-title-letter {
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.hero-mario-runner {
+  will-change: transform;
+}
+
+.hero-mario-bob {
+  animation: hero-mario-bob 460ms ease-in-out infinite;
+  transform-origin: center bottom;
+  will-change: transform;
+}
+
+.hero-mario-frame {
+  transform-origin: center;
+}
+
+.hero-mario-frame-a {
+  animation: hero-mario-frame-a 380ms steps(1, end) infinite;
+}
+
+.hero-mario-frame-b {
+  animation: hero-mario-frame-b 380ms steps(1, end) infinite;
+}
+
+@keyframes hero-mario-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes hero-mario-frame-a {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-mario-frame-b {
+  0%,
+  49.9% {
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mario-runner {
+    display: none !important;
+  }
+
+  .hero-title-letter {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .hero-mario-bob,
+  .hero-mario-frame-a,
+  .hero-mario-frame-b {
+    animation: none !important;
+  }
 }
