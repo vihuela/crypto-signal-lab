@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, DatabaseZap, Radar, Waves } from "lucide-react";
+import { Bot, Radar, Waves } from "lucide-react";
 
-import { fetchReplay, fetchWatchlist } from "@/features/dashboard/api";
+import {
+  fetchReplay,
+  fetchStrategyLeaderboard,
+  fetchWatchlist,
+} from "@/features/dashboard/api";
 import {
   replayLimitByTimeframe,
   sourceOptions,
@@ -14,10 +18,18 @@ import {
 import { ControlSelect } from "@/features/dashboard/components/control-select";
 import { LanguageToggle } from "@/features/dashboard/components/language-toggle";
 import { MarketStageChart } from "@/features/dashboard/components/market-stage-chart";
+import { StrategyLeaderboard } from "@/features/dashboard/components/strategy-leaderboard";
+import {
+  formatDatasetWindow,
+  formatPercent,
+  formatTime,
+  formatUsd,
+} from "@/features/dashboard/formatters";
 import type {
   ReplayResponse,
   SourceId,
   StrategyId,
+  StrategyLeaderboardResponse,
   Timeframe,
   WatchlistItem,
 } from "@/features/dashboard/types";
@@ -37,10 +49,15 @@ export function DashboardShell() {
   const [strategy, setStrategy] = useState<StrategyId>(defaultStrategy);
   const [replay, setReplay] = useState<ReplayResponse | null>(null);
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [leaderboard, setLeaderboard] = useState<StrategyLeaderboardResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(true);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,13 +129,79 @@ export function DashboardShell() {
     };
   }, [dictionary.cards.error, source, symbol, timeframe, strategy]);
 
+  useEffect(() => {
+    let cancelled = false;
+    let refreshTimerId: number | null = null;
+    let requestSequence = 0;
+
+    async function load(backgroundRefresh: boolean) {
+      const requestId = ++requestSequence;
+
+      if (!backgroundRefresh) {
+        setIsLeaderboardLoading(true);
+        setLeaderboardError(null);
+      }
+
+      try {
+        const leaderboardData = await fetchStrategyLeaderboard({
+          source,
+          symbol,
+          timeframe,
+          limit: replayLimitByTimeframe[timeframe],
+        });
+
+        if (!cancelled && requestId === requestSequence) {
+          setLeaderboard(leaderboardData);
+          setLeaderboardError(null);
+        }
+      } catch (loadError) {
+        if (!cancelled && requestId === requestSequence) {
+          setLeaderboardError(
+            loadError instanceof Error ? loadError.message : dictionary.cards.error
+          );
+        }
+      } finally {
+        if (!cancelled && requestId === requestSequence && !backgroundRefresh) {
+          setIsLeaderboardLoading(false);
+        }
+
+        if (!cancelled && requestId === requestSequence) {
+          refreshTimerId = window.setTimeout(() => {
+            void load(true);
+          }, LIVE_REFRESH_MS);
+        }
+      }
+    }
+
+    void load(false);
+
+    return () => {
+      cancelled = true;
+      if (refreshTimerId) {
+        window.clearTimeout(refreshTimerId);
+      }
+    };
+  }, [dictionary.cards.error, source, symbol, timeframe]);
+
   const marketCopy = dictionary;
   const lastUpdatedLabel = lastUpdatedAt ? formatTime(lastUpdatedAt, locale) : null;
   const replayWindowSummary = replay
     ? formatReplayWindow({
         candles: replay.candles,
+        timeframe,
         timeframeLabel: marketCopy.timeframes[timeframe],
         candlesLabel: marketCopy.stats.candles,
+        locale,
+      })
+    : null;
+  const leaderboardWindowSummary = leaderboard
+    ? formatDatasetWindow({
+        start: leaderboard.start_time,
+        end: leaderboard.end_time,
+        candleCount: leaderboard.candle_count,
+        timeframeLabel: marketCopy.timeframes[timeframe],
+        candlesLabel: marketCopy.stats.candles,
+        timeframe,
         locale,
       })
     : null;
@@ -290,41 +373,46 @@ export function DashboardShell() {
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <ControlSelect
-              label={marketCopy.controls.source}
-              value={source}
-              options={translatedSourceOptions}
-              onChange={(value) => setSource(value as SourceId)}
-            />
-            <ControlSelect
-              label={marketCopy.controls.pair}
-              value={symbol}
-              options={translatedSymbolOptions}
-              onChange={setSymbol}
-            />
-            <ControlSelect
-              label={marketCopy.controls.timeframe}
-              value={timeframe}
-              options={translatedTimeframeOptions}
-              onChange={(value) => setTimeframe(value as Timeframe)}
-            />
-            <ControlSelect
-              label={marketCopy.controls.strategy}
-              value={strategy}
-              options={translatedStrategyOptions}
-              onChange={(value) => setStrategy(value as StrategyId)}
-            />
-            <div className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/88 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-sm">
-              <span className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
-                API
-              </span>
-              <p className="font-medium tracking-[0.03em] text-white/92">
-                FastAPI orchestration
-              </p>
+        </header>
+
+        <section className="sticky top-3 z-40">
+          <div className="rounded-[1.8rem] border border-white/10 bg-[rgba(11,12,14,0.88)] px-4 py-4 shadow-[0_18px_48px_rgba(0,0,0,0.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(11,12,14,0.78)] md:px-5">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              <ControlSelect
+                label={marketCopy.controls.source}
+                value={source}
+                options={translatedSourceOptions}
+                onChange={(value) => setSource(value as SourceId)}
+              />
+              <ControlSelect
+                label={marketCopy.controls.pair}
+                value={symbol}
+                options={translatedSymbolOptions}
+                onChange={setSymbol}
+              />
+              <ControlSelect
+                label={marketCopy.controls.timeframe}
+                value={timeframe}
+                options={translatedTimeframeOptions}
+                onChange={(value) => setTimeframe(value as Timeframe)}
+              />
+              <ControlSelect
+                label={marketCopy.controls.strategy}
+                value={strategy}
+                options={translatedStrategyOptions}
+                onChange={(value) => setStrategy(value as StrategyId)}
+              />
+              <div className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/88 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-sm">
+                <span className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
+                  API
+                </span>
+                <p className="font-medium tracking-[0.03em] text-white/92">
+                  FastAPI orchestration
+                </p>
+              </div>
             </div>
           </div>
-        </header>
+        </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_380px]">
           <MarketStageChart
@@ -343,6 +431,7 @@ export function DashboardShell() {
             }
             locale={locale}
             markerText={marketCopy.markers}
+            chartText={marketCopy.chart}
             loadingLabel={marketCopy.cards.loading}
             liveBadgeLabel={`${marketCopy.stats.live} · ${marketCopy.stats.autoRefresh}`}
             refreshBadgeLabel={marketCopy.stats.refreshing}
@@ -467,7 +556,28 @@ export function DashboardShell() {
           </aside>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)]">
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
+          <StrategyLeaderboard
+            entries={leaderboard?.entries ?? []}
+            isLoading={isLeaderboardLoading}
+            error={leaderboardError}
+            locale={locale}
+            sectionLabel={marketCopy.sections.strategyBoard}
+            title={`${marketCopy.assets[symbol as keyof typeof marketCopy.assets]} · ${marketCopy.timeframes[timeframe]}`}
+            sourceLabel={marketCopy.sources[source]}
+            windowDateRange={leaderboardWindowSummary?.dateRange ?? null}
+            windowMeta={leaderboardWindowSummary?.meta ?? null}
+            buyHoldReturn={
+              leaderboard
+                ? formatPercent(leaderboard.buy_hold_return_pct, locale)
+                : null
+            }
+            selectedStrategyId={strategy}
+            onSelectStrategy={setStrategy}
+            biasLabels={marketCopy.bias}
+            copy={marketCopy.leaderboard}
+          />
+
           <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-6 py-6">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -480,7 +590,7 @@ export function DashboardShell() {
               </div>
               <Bot className="h-5 w-5 text-[#8fb2ff]" />
             </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 grid gap-4">
               {strategyOptions.map((strategyOption) => {
                 const copy = marketCopy.strategies[strategyOption.value];
                 return (
@@ -509,90 +619,22 @@ export function DashboardShell() {
               })}
             </div>
           </section>
-
-          <section className="grid gap-6">
-            <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-6 py-6">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
-                    {marketCopy.sections.dataProvenance}
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-[#f7efe5]">
-                    {marketCopy.sources[source]}
-                  </h2>
-                </div>
-                <DatabaseZap className="h-5 w-5 text-[#d29d73]" />
-              </div>
-              <div className="mt-4 space-y-3">
-                {translatedSourceOptions.map((sourceOption) => (
-                  <div
-                    key={sourceOption.value}
-                    className="flex items-center justify-between rounded-[1.3rem] bg-white/4 px-4 py-4"
-                  >
-                    <div>
-                      <p className="font-semibold text-[#f7efe5]">{sourceOption.label}</p>
-                      <p className="text-sm text-white/48">{marketCopy.cards.normalized}</p>
-                    </div>
-                    <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/48">
-                      {marketCopy.cards.active}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-6 py-6">
-              <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
-                {marketCopy.sections.clearBoundaries}
-              </p>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-white/58">
-                {marketCopy.architecture.map((note) => (
-                  <li key={note} className="rounded-[1.1rem] bg-white/4 px-4 py-3">
-                    {note}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </section>
         </section>
+
       </div>
     </main>
   );
 }
 
-function formatUsd(value: number, locale: "en" | "zh") {
-  return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: value >= 100 ? 0 : value >= 1 ? 2 : 4,
-  }).format(value);
-}
-
-function formatPercent(value: number, locale: "en" | "zh") {
-  const formatter = new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-    signDisplay: "always",
-  });
-  return `${formatter.format(value)}%`;
-}
-
-function formatTime(value: string, locale: "en" | "zh") {
-  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).format(new Date(value));
-}
-
 function formatReplayWindow({
   candles,
+  timeframe,
   timeframeLabel,
   candlesLabel,
   locale,
 }: {
   candles: ReplayResponse["candles"];
+  timeframe: Timeframe;
   timeframeLabel: string;
   candlesLabel: string;
   locale: "en" | "zh";
@@ -601,21 +643,13 @@ function formatReplayWindow({
     return null;
   }
 
-  const start = formatDate(candles[0].time, locale);
-  const end = formatDate(candles[candles.length - 1].time, locale);
-  return {
-    dateRange: `${start} - ${end}`,
-    meta: `${candles.length} ${candlesLabel} · ${timeframeLabel}`,
-  };
-}
-
-function formatDate(value: string, locale: "en" | "zh") {
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(year, (month || 1) - 1, day || 1));
-  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: "UTC",
-  }).format(date);
+  return formatDatasetWindow({
+    start: candles[0].time,
+    end: candles[candles.length - 1].time,
+    candleCount: candles.length,
+    timeframeLabel,
+    candlesLabel,
+    timeframe,
+    locale,
+  });
 }

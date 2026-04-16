@@ -1,0 +1,17 @@
+{
+  "name": "crypto-signal-lab-api-edge",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:cf": "wrangler dev",
+    "deploy:cf": "wrangler deploy",
+    "deploy:cf:production": "wrangler deploy --env production",
+    "cf-typegen": "wrangler types --env-interface ApiWorkerEnv cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.2"
+  },
+  "devDependencies": {
+    "wrangler": "^4.83.0"
+  }
+}

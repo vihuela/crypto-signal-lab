@@ -2,6 +2,7 @@ import type {
   ReplayResponse,
   SourceId,
   StrategyId,
+  StrategyLeaderboardResponse,
   Timeframe,
   WatchlistItem,
 } from "@/features/dashboard/types";
@@ -69,10 +70,43 @@ export async function fetchWatchlist({
   return response.json();
 }
 
+export async function fetchStrategyLeaderboard({
+  source,
+  symbol,
+  timeframe,
+  limit = 1000,
+  signal,
+}: Omit<ReplayParams, "strategy">): Promise<StrategyLeaderboardResponse> {
+  const url = buildApiUrl("/api/v1/market/leaderboard", {
+    source,
+    symbol,
+    timeframe,
+    limit: String(limit),
+  });
+
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal,
+  });
+  if (!response.ok) {
+    const detail = await readErrorMessage(response);
+    throw new Error(detail);
+  }
+
+  return response.json();
+}
+
 async function readErrorMessage(response: Response) {
   try {
-    const payload = await response.json();
-    return payload.detail ?? `Request failed with status ${response.status}`;
+    const payload: unknown = await response.json();
+    if (payload && typeof payload === "object" && "detail" in payload) {
+      const detail = payload.detail;
+      if (typeof detail === "string") {
+        return detail;
+      }
+    }
+
+    return `Request failed with status ${response.status}`;
   } catch {
     return `Request failed with status ${response.status}`;
   }

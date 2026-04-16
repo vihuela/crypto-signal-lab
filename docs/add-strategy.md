@@ -13,6 +13,10 @@
 - `apps/api/app/services/strategies/ema_regime.py`
 - `apps/api/app/services/strategies/donchian_breakout.py`
 - `apps/api/app/services/strategies/rsi_bollinger_swing.py`
+- `apps/api/app/services/strategies/supertrend_atr.py`
+- `apps/api/app/services/strategies/ichimoku_cloud.py`
+- `apps/api/app/services/strategies/parabolic_sar.py`
+- `apps/api/scripts/run_strategy_benchmarks.py`
 
 相关配置位置：
 

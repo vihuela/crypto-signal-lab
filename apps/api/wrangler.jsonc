@@ -1,0 +1,76 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "crypto-signal-lab-api",
+  "main": "cloudflare/worker.mjs",
+  "compatibility_date": "2026-04-16",
+  "vars": {
+    "API_CONTAINER_INSTANCE_NAME": "crypto-signal-lab-api"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "containers": [
+    {
+      "name": "crypto-signal-lab-api",
+      "class_name": "CryptoSignalLabApiContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1,
+      "instance_type": "basic",
+      "image_vars": {
+        "CSL_APP_ENV": "cloudflare",
+        "CSL_ALLOWED_ORIGINS": "https://crypto-signal-lab.rickyyao.cc,http://localhost:3000"
+      }
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "API_CONTAINER",
+        "class_name": "CryptoSignalLabApiContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "CryptoSignalLabApiContainer"
+      ]
+    }
+  ],
+  "env": {
+    "production": {
+      "name": "crypto-signal-lab-api-production",
+      "vars": {
+        "API_CONTAINER_INSTANCE_NAME": "crypto-signal-lab-api-prod-v2"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "API_CONTAINER",
+            "class_name": "CryptoSignalLabApiContainer"
+          }
+        ]
+      },
+      "containers": [
+        {
+          "name": "crypto-signal-lab-api-production",
+          "class_name": "CryptoSignalLabApiContainer",
+          "image": "./Dockerfile",
+          "max_instances": 1,
+          "instance_type": "basic",
+          "image_vars": {
+            "CSL_APP_ENV": "cloudflare",
+            "CSL_ALLOWED_ORIGINS": "https://crypto-signal-lab.rickyyao.cc,http://localhost:3000"
+          }
+        }
+      ],
+      "routes": [
+        {
+          "pattern": "api.crypto-signal-lab.rickyyao.cc",
+          "custom_domain": true
+        }
+      ]
+    }
+  }
+}

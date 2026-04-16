@@ -9,8 +9,13 @@ from .indicators import ema
 def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
     closes = [candle.close for candle in candles]
 
-    fast_period = 20 if timeframe == "1d" else 8
-    slow_period = 50 if timeframe == "1d" else 21
+    fast_period, slow_period = {
+        "15m": (21, 55),
+        "1h": (20, 50),
+        "4h": (18, 48),
+        "1d": (20, 50),
+        "1w": (8, 21),
+    }.get(timeframe, (20, 50))
     fast = ema(closes, fast_period)
     slow = ema(closes, slow_period)
 

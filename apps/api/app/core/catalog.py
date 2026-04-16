@@ -12,6 +12,21 @@ SUPPORTED_SOURCES: Final[dict[str, dict[str, str]]] = {
 }
 
 SUPPORTED_TIMEFRAMES: Final[dict[str, dict[str, str]]] = {
+    "15m": {
+        "label": "15M",
+        "binance": "15m",
+        "bybit": "15",
+    },
+    "1h": {
+        "label": "1H",
+        "binance": "1h",
+        "bybit": "60",
+    },
+    "4h": {
+        "label": "4H",
+        "binance": "4h",
+        "bybit": "240",
+    },
     "1d": {
         "label": "1D",
         "binance": "1d",
@@ -59,5 +74,17 @@ SUPPORTED_STRATEGIES: Final[dict[str, dict[str, str]]] = {
     "rsi-bollinger-swing": {
         "label": "RSI Bollinger Swing",
         "style": "mean reversion",
+    },
+    "supertrend-atr": {
+        "label": "Supertrend ATR",
+        "style": "volatility trend",
+    },
+    "ichimoku-cloud": {
+        "label": "Ichimoku Cloud",
+        "style": "trend confirmation",
+    },
+    "parabolic-sar": {
+        "label": "Parabolic SAR",
+        "style": "stop and reverse",
     },
 }

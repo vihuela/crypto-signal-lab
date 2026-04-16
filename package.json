@@ -5,8 +5,18 @@
     "dev:web": "npm --prefix apps/web run dev",
     "lint:web": "npm --prefix apps/web run lint",
     "typecheck:web": "npm --prefix apps/web run typecheck",
+    "preview:web:cf": "npm --prefix apps/web run preview:cf",
+    "deploy:web:cf": "npm --prefix apps/web run deploy:cf:production",
+    "tail:web:cf": "npm --prefix apps/web exec wrangler -- tail crypto-signal-lab-web-production --format pretty",
     "dev:api": "cd apps/api && .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
     "bootstrap:api": "cd apps/api && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt",
+    "backtest:api": "cd apps/api && .venv/bin/python scripts/run_strategy_benchmarks.py",
+    "dev:api:cf": "npm --prefix apps/api run dev:cf",
+    "deploy:api:cf": "npm --prefix apps/api run deploy:cf:production",
+    "tail:api:cf": "npm --prefix apps/api exec wrangler -- tail crypto-signal-lab-api-production --format pretty",
+    "deploy:cf": "npm run deploy:api:cf && npm run deploy:web:cf",
+    "cf:login": "npm --prefix apps/web exec wrangler login",
+    "cf:whoami": "npm --prefix apps/web exec wrangler whoami",
     "dev": "printf 'Run `npm run dev:web` and `npm run dev:api` in separate terminals.\\n'"
   }
 }

@@ -11,8 +11,13 @@ def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
     highs = [candle.high for candle in candles]
     lows = [candle.low for candle in candles]
 
-    lookback = 20 if timeframe == "1d" else 12
-    exit_lookback = 10 if timeframe == "1d" else 6
+    lookback, exit_lookback = {
+        "15m": (55, 20),
+        "1h": (34, 13),
+        "4h": (26, 10),
+        "1d": (20, 10),
+        "1w": (12, 6),
+    }.get(timeframe, (20, 10))
     upper = rolling_max(highs, lookback)
     lower = rolling_min(lows, exit_lookback)
     centerline = [

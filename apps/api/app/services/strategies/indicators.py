@@ -42,6 +42,31 @@ def rolling_min(values: list[float], period: int) -> list[float | None]:
     return result
 
 
+def rolling_high(values: list[float], period: int) -> list[float | None]:
+    result: list[float | None] = [None] * len(values)
+    for index in range(period - 1, len(values)):
+        result[index] = max(values[index - period + 1 : index + 1])
+    return result
+
+
+def rolling_low(values: list[float], period: int) -> list[float | None]:
+    result: list[float | None] = [None] * len(values)
+    for index in range(period - 1, len(values)):
+        result[index] = min(values[index - period + 1 : index + 1])
+    return result
+
+
+def rolling_midpoint(
+    highs: list[float], lows: list[float], period: int
+) -> list[float | None]:
+    highs_window = rolling_high(highs, period)
+    lows_window = rolling_low(lows, period)
+    return [
+        ((high + low) / 2) if high is not None and low is not None else None
+        for high, low in zip(highs_window, lows_window)
+    ]
+
+
 def rolling_std(values: list[float], period: int) -> list[float | None]:
     result: list[float | None] = [None] * len(values)
     for index in range(period - 1, len(values)):
@@ -85,5 +110,33 @@ def rsi(values: list[float], period: int) -> list[float | None]:
         else:
             rs = average_gain / average_loss
             result[index] = 100 - (100 / (1 + rs))
+
+    return result
+
+
+def atr(
+    highs: list[float], lows: list[float], closes: list[float], period: int
+) -> list[float | None]:
+    result: list[float | None] = [None] * len(highs)
+    if len(highs) < period:
+        return result
+
+    true_ranges: list[float] = [highs[0] - lows[0]]
+    for index in range(1, len(highs)):
+        true_ranges.append(
+            max(
+                highs[index] - lows[index],
+                abs(highs[index] - closes[index - 1]),
+                abs(lows[index] - closes[index - 1]),
+            )
+        )
+
+    seed = sum(true_ranges[:period]) / period
+    result[period - 1] = seed
+    previous = seed
+
+    for index in range(period, len(highs)):
+        previous = ((previous * (period - 1)) + true_ranges[index]) / period
+        result[index] = previous
 
     return result

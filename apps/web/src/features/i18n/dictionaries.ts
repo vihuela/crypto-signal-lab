@@ -5,7 +5,7 @@ export const dictionaries = {
     nav: {
       researchTerminal: "Local research terminal",
       spotOnly: "Spot only",
-      timeframes: "1d / 1w",
+      timeframes: "15m / 1h / 4h / 1d / 1w",
       language: "Language",
     },
     hero: {
@@ -24,6 +24,7 @@ export const dictionaries = {
       replay: "Market Replay",
       sessionBias: "Session Bias",
       watchStack: "Watch Stack",
+      strategyBoard: "Strategy Board",
       strategyRack: "Strategy Rack",
       dataProvenance: "Data provenance",
       clearBoundaries: "Clear boundaries",
@@ -73,6 +74,27 @@ export const dictionaries = {
       entry: "entry",
       exit: "exit",
     },
+    chart: {
+      macdPane: "MACD pressure",
+      macdLine: "MACD",
+      signalLine: "Signal",
+      histogram: "Histogram",
+      zeroLine: "Zero axis",
+    },
+    leaderboard: {
+      currentLeader: "Current leader",
+      rankedBy: "Ranked by edge over buy & hold",
+      selectHint: "Choose any row to load that strategy's entries and exits into the chart.",
+      selected: "Selected",
+      strategyReturn: "Strategy return",
+      edge: "Edge vs hold",
+      drawdown: "Max drawdown",
+      winRate: "Win rate",
+      trades: "Trades",
+      confidence: "Confidence",
+      buyHold: "Buy & hold",
+      empty: "Comparison data is loading...",
+    },
     watch: {
       currentFocus: "Current focus set",
       currentFocusSubtitle: "Source-aware reads across the default asset basket",
@@ -96,6 +118,24 @@ export const dictionaries = {
         thesis:
           "Fade panic stretches when volatility expands but macro structure remains constructive.",
       },
+      "supertrend-atr": {
+        label: "Supertrend ATR",
+        style: "Volatility trend",
+        thesis:
+          "Ride clean spot trends with an ATR-based stop line that adapts as volatility expands or contracts.",
+      },
+      "ichimoku-cloud": {
+        label: "Ichimoku Cloud",
+        style: "Trend confirmation",
+        thesis:
+          "Stay aligned with the broader cloud structure and only hold when price and baseline remain in agreement.",
+      },
+      "parabolic-sar": {
+        label: "Parabolic SAR",
+        style: "Stop and reverse",
+        thesis:
+          "Use a fast trailing stop on directional swings and flip defensive quickly when the parabola breaks.",
+      },
       "community-adapter": {
         label: "Community Adapter",
         style: "Custom import",
@@ -114,6 +154,9 @@ export const dictionaries = {
       DOGEUSDT: "DOGE / USDT",
     },
     timeframes: {
+      "15m": "15M",
+      "1h": "1H",
+      "4h": "4H",
       "1d": "1D",
       "1w": "1W",
     },
@@ -128,7 +171,7 @@ export const dictionaries = {
     nav: {
       researchTerminal: "本地研究终端",
       spotOnly: "仅现货",
-      timeframes: "日线 / 周线",
+      timeframes: "15分 / 1小时 / 4小时 / 日线 / 周线",
       language: "语言",
     },
     hero: {
@@ -147,6 +190,7 @@ export const dictionaries = {
       replay: "市场回放",
       sessionBias: "当前偏向",
       watchStack: "观察列表",
+      strategyBoard: "策略对比",
       strategyRack: "策略仓",
       dataProvenance: "数据来源",
       clearBoundaries: "职责边界",
@@ -196,6 +240,27 @@ export const dictionaries = {
       entry: "入场",
       exit: "离场",
     },
+    chart: {
+      macdPane: "MACD 动量",
+      macdLine: "MACD",
+      signalLine: "信号线",
+      histogram: "柱体",
+      zeroLine: "零轴",
+    },
+    leaderboard: {
+      currentLeader: "当前领先策略",
+      rankedBy: "按相对买入持有的超额收益排序",
+      selectHint: "点击任意一行，就会把对应策略的入场和离场切到上面的图表里。",
+      selected: "当前查看",
+      strategyReturn: "策略收益",
+      edge: "超额收益",
+      drawdown: "最大回撤",
+      winRate: "胜率",
+      trades: "交易次数",
+      confidence: "强度",
+      buyHold: "买入持有",
+      empty: "策略对比数据加载中...",
+    },
     watch: {
       currentFocus: "当前关注集合",
       currentFocusSubtitle: "围绕默认资产篮子的来源感知读盘",
@@ -219,6 +284,24 @@ export const dictionaries = {
         thesis:
           "在波动放大但大结构没有坏掉时，专门寻找日线级别的情绪拉扯和反抽机会。",
       },
+      "supertrend-atr": {
+        label: "Supertrend ATR",
+        style: "波动趋势",
+        thesis:
+          "用 ATR 自适应出来的趋势线去跟随现货单边，波动放大时也能自动把止损带宽拉开。",
+      },
+      "ichimoku-cloud": {
+        label: "Ichimoku 云图",
+        style: "趋势确认",
+        thesis:
+          "只在价格、基准线和云层结构同时顺势时持有，尽量减少在震荡云层里的来回切换。",
+      },
+      "parabolic-sar": {
+        label: "抛物线 SAR",
+        style: "止损反转",
+        thesis:
+          "用更敏感的抛物线追踪止损去抓方向段，一旦趋势结构破坏就更快退回防守。",
+      },
       "community-adapter": {
         label: "社区策略接口",
         style: "自定义导入",
@@ -237,6 +320,9 @@ export const dictionaries = {
       DOGEUSDT: "DOGE / USDT",
     },
     timeframes: {
+      "15m": "15 分钟",
+      "1h": "1 小时",
+      "4h": "4 小时",
       "1d": "日线",
       "1w": "周线",
     },

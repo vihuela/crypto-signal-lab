@@ -72,6 +72,27 @@ def get_strategies() -> list[StrategySummary]:
             status="ready",
         ),
         StrategySummary(
+            id="supertrend-atr",
+            label="Supertrend ATR",
+            style="volatility trend",
+            timeframe="1d / 1w",
+            status="ready",
+        ),
+        StrategySummary(
+            id="ichimoku-cloud",
+            label="Ichimoku Cloud",
+            style="trend confirmation",
+            timeframe="1d / 1w",
+            status="ready",
+        ),
+        StrategySummary(
+            id="parabolic-sar",
+            label="Parabolic SAR",
+            style="stop and reverse",
+            timeframe="1d / 1w",
+            status="ready",
+        ),
+        StrategySummary(
             id="community-adapter",
             label="Community Strategy Adapter",
             style="custom import",

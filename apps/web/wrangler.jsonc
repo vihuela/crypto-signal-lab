@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "crypto-signal-lab-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-16",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_compat_populate_process_env"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "env": {
+    "production": {
+      "vars": {
+        "CSL_API_BASE_URL": "https://api.crypto-signal-lab.rickyyao.cc"
+      },
+      "routes": [
+        {
+          "pattern": "crypto-signal-lab.rickyyao.cc",
+          "custom_domain": true
+        }
+      ]
+    }
+  }
+}

@@ -3,9 +3,13 @@ import asyncio
 from fastapi import APIRouter, HTTPException, Query
 
 from app.core.catalog import SUPPORTED_ASSETS, SUPPORTED_SOURCES, SUPPORTED_STRATEGIES, SUPPORTED_TIMEFRAMES
-from app.schemas.market import ReplayResponse, WatchlistItem
+from app.schemas.market import (
+    ReplayResponse,
+    StrategyLeaderboardResponse,
+    WatchlistItem,
+)
 from app.services.market_data import fetch_candles
-from app.services.strategies import build_replay
+from app.services.strategies import build_replay, build_strategy_leaderboard
 
 router = APIRouter(tags=["market"])
 
@@ -63,12 +67,42 @@ async def market_watchlist(
     )
 
 
+@router.get("/market/leaderboard", response_model=StrategyLeaderboardResponse)
+async def market_leaderboard(
+    source: str = Query("binance-spot"),
+    symbol: str = Query("BTCUSDT"),
+    timeframe: str = Query("1d"),
+    limit: int = Query(1000, ge=90, le=1000),
+) -> StrategyLeaderboardResponse:
+    _validate_market_query(source=source, symbol=symbol, timeframe=timeframe)
+    candles = await fetch_candles(
+        source_id=source,
+        symbol=symbol,
+        timeframe=timeframe,
+        limit=limit,
+    )
+    return build_strategy_leaderboard(
+        source_id=source,
+        symbol=symbol,
+        timeframe=timeframe,
+        candles=candles,
+    )
+
+
 def _validate_query(source: str, symbol: str, timeframe: str, strategy: str) -> None:
+    _validate_market_query(source=source, symbol=symbol, timeframe=timeframe)
+    _validate_strategy(strategy=strategy)
+
+
+def _validate_market_query(source: str, symbol: str, timeframe: str) -> None:
     if source not in SUPPORTED_SOURCES:
         raise HTTPException(status_code=400, detail=f"Unsupported source: {source}")
     if symbol not in SUPPORTED_ASSETS:
         raise HTTPException(status_code=400, detail=f"Unsupported symbol: {symbol}")
     if timeframe not in SUPPORTED_TIMEFRAMES:
         raise HTTPException(status_code=400, detail=f"Unsupported timeframe: {timeframe}")
+
+
+def _validate_strategy(strategy: str) -> None:
     if strategy not in SUPPORTED_STRATEGIES:
         raise HTTPException(status_code=400, detail=f"Unsupported strategy: {strategy}")

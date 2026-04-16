@@ -9,12 +9,18 @@ from .backtest import run_backtest
 from .base import StrategyRunner
 from .donchian_breakout import run as run_donchian_breakout
 from .ema_regime import run as run_ema_regime
+from .ichimoku_cloud import run as run_ichimoku_cloud
+from .parabolic_sar import run as run_parabolic_sar
 from .rsi_bollinger_swing import run as run_rsi_bollinger_swing
+from .supertrend_atr import run as run_supertrend_atr
 
 STRATEGY_RUNNERS: Final[dict[str, StrategyRunner]] = {
     "ema-regime": run_ema_regime,
     "donchian-breakout": run_donchian_breakout,
     "rsi-bollinger-swing": run_rsi_bollinger_swing,
+    "supertrend-atr": run_supertrend_atr,
+    "ichimoku-cloud": run_ichimoku_cloud,
+    "parabolic-sar": run_parabolic_sar,
 }
 
 

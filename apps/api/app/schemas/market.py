@@ -46,6 +46,31 @@ class ReplayResponse(BaseModel):
     stats: ReplayStats
 
 
+class StrategyLeaderboardEntry(BaseModel):
+    strategy_id: str
+    strategy_label: str
+    strategy_style: str
+    total_return_pct: float
+    edge_vs_hold_pct: float
+    max_drawdown_pct: float
+    win_rate_pct: float
+    trade_count: int
+    strategy_bias: Literal["bullish", "neutral", "defensive"]
+    confidence: float
+
+
+class StrategyLeaderboardResponse(BaseModel):
+    source_id: str
+    source_label: str
+    symbol: str
+    timeframe: str
+    candle_count: int
+    start_time: str
+    end_time: str
+    buy_hold_return_pct: float
+    entries: list[StrategyLeaderboardEntry]
+
+
 class WatchlistItem(BaseModel):
     symbol: str
     source_id: str
