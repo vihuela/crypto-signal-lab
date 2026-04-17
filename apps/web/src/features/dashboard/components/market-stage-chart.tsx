@@ -98,6 +98,7 @@ export function MarketStageChart({
   const onLoadMoreRef = useRef(onLoadMore);
   const candlesRef = useRef(candles);
   const isLoadingMoreRef = useRef(isLoadingMore);
+  const prevLogicalFromRef = useRef<number | null>(null);
   const macdSeries = buildMacdSeries(candles);
 
   useEffect(() => {
@@ -307,8 +308,14 @@ export function MarketStageChart({
       window.requestAnimationFrame(repositionLatestPricePulse);
 
       if (!chartRef.current || isLoadingMoreRef.current || !onLoadMoreRef.current) return;
+      if (shouldFitContentRef.current) return;
       const range = chartRef.current.timeScale().getVisibleLogicalRange();
-      if (range && range.from < 10 && candlesRef.current.length > 0) {
+      if (!range || candlesRef.current.length === 0) return;
+      const prevFrom = prevLogicalFromRef.current;
+      prevLogicalFromRef.current = range.from;
+      if (prevFrom === null) return;
+      const isScrollingLeft = range.from < prevFrom;
+      if (isScrollingLeft && range.from < 20) {
         onLoadMoreRef.current(candlesRef.current[0].time);
       }
     };
@@ -344,6 +351,7 @@ export function MarketStageChart({
 
   useEffect(() => {
     shouldFitContentRef.current = true;
+    prevLogicalFromRef.current = null;
   }, [resetKey]);
 
   useEffect(() => {
