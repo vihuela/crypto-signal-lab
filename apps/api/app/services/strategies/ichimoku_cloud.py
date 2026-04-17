@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from app.schemas.market import Candle
 
-from .base import StrategyOutcome
+from .base import StrategyContext, StrategyOutcome
 from .indicators import rolling_midpoint
 
 
-def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
-    del timeframe
+def run(
+    timeframe: str,
+    candles: list[Candle],
+    context: StrategyContext | None = None,
+) -> StrategyOutcome:
+    del timeframe, context
 
     highs = [candle.high for candle in candles]
     lows = [candle.low for candle in candles]

@@ -64,9 +64,15 @@ The API deployment lives in:
 
 The Worker keeps a single named FastAPI container warm and forwards incoming requests to it.
 
+Before deploying, write any private factor keys into Worker secrets. The Worker now forwards
+those secrets into the FastAPI container as environment variables.
+
 ```bash
 cd crypto-signal-lab
 npm install --prefix apps/api
+printf '%s' 'your_fred_key' | npm --prefix apps/api exec wrangler secret put CSL_FRED_API_KEY --env production
+printf '%s' 'your_glassnode_key' | npm --prefix apps/api exec wrangler secret put CSL_GLASSNODE_API_KEY --env production
+printf '%s' 'your_sosovalue_key' | npm --prefix apps/api exec wrangler secret put CSL_SOSOVALUE_API_KEY --env production
 npm run deploy:api:cf
 ```
 

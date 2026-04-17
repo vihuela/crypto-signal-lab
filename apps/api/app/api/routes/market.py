@@ -9,6 +9,7 @@ from app.schemas.market import (
     StrategyLeaderboardResponse,
     WatchlistItem,
 )
+from app.services.factor_data import build_strategy_context
 from app.services.market_data import fetch_candles
 from app.services.strategies import build_replay, build_strategy_leaderboard
 
@@ -26,12 +27,19 @@ async def market_replay(
 ) -> ReplayResponse:
     _validate_query(source=source, symbol=symbol, timeframe=timeframe, strategy=strategy)
     candles = await fetch_candles(source_id=source, symbol=symbol, timeframe=timeframe, limit=limit, end_time=end_time)
+    strategy_context = await build_strategy_context(
+        source_id=source,
+        symbol=symbol,
+        candles=candles,
+        strategy_id=strategy,
+    )
     return build_replay(
         source_id=source,
         symbol=symbol,
         timeframe=timeframe,
         strategy_id=strategy,
         candles=candles,
+        strategy_context=strategy_context,
     )
 
 
@@ -45,12 +53,19 @@ async def market_watchlist(
 
     async def build_item(symbol: str) -> WatchlistItem:
         candles = await fetch_candles(source_id=source, symbol=symbol, timeframe=timeframe, limit=120)
+        strategy_context = await build_strategy_context(
+            source_id=source,
+            symbol=symbol,
+            candles=candles,
+            strategy_id=strategy,
+        )
         replay = build_replay(
             source_id=source,
             symbol=symbol,
             timeframe=timeframe,
             strategy_id=strategy,
             candles=candles,
+            strategy_context=strategy_context,
         )
         previous = candles[-2].close
         latest = candles[-1].close
@@ -83,11 +98,18 @@ async def market_leaderboard(
         timeframe=timeframe,
         limit=limit,
     )
+    strategy_context = await build_strategy_context(
+        source_id=source,
+        symbol=symbol,
+        candles=candles,
+        strategy_id="jiayi-four-factor",
+    )
     return build_strategy_leaderboard(
         source_id=source,
         symbol=symbol,
         timeframe=timeframe,
         candles=candles,
+        strategy_context=strategy_context,
     )
 
 

@@ -38,5 +38,6 @@ export const strategyOptions: {
   { value: "supertrend-atr" },
   { value: "ichimoku-cloud" },
   { value: "parabolic-sar" },
+  { value: "jiayi-four-factor" },
   { value: "community-adapter", disabled: true },
 ];

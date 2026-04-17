@@ -6,8 +6,16 @@ export type StrategyId =
   | "rsi-bollinger-swing"
   | "supertrend-atr"
   | "ichimoku-cloud"
-  | "parabolic-sar";
+  | "parabolic-sar"
+  | "jiayi-four-factor";
 export type Bias = "bullish" | "neutral" | "defensive";
+export type FactorId =
+  | "fear_greed"
+  | "mvrv_z"
+  | "sopr"
+  | "etf_flow_5d_usd"
+  | "macro_regime";
+export type FactorSourceMode = "live" | "proxy" | "unavailable";
 
 export type Candle = {
   time: string;
@@ -48,6 +56,31 @@ export type ReplayResponse = {
     strategy_bias: Bias;
     confidence: number;
   };
+  diagnostics: {
+    long_score: number;
+    defensive_score: number;
+    core_long_count: number;
+    core_defensive_count: number;
+    resonance_threshold: number;
+    core_factor_count: number;
+    fear_weight: number;
+    fear_active: boolean;
+    factors: {
+      factor_id: FactorId;
+      value: number | null;
+      source_mode: FactorSourceMode;
+      long_signal: boolean;
+      defensive_signal: boolean;
+    }[];
+    factor_series: {
+      factor_id: FactorId;
+      source_mode: FactorSourceMode;
+      points: {
+        time: string;
+        value: number | null;
+      }[];
+    }[];
+  } | null;
 };
 
 export type StrategyLeaderboardEntry = {

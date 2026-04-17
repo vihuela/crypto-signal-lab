@@ -15,6 +15,8 @@ services:
     build:
       context: ../apps/api
     container_name: crypto-signal-lab-api
+    env_file:
+      - ../apps/api/.env.local
     environment:
       CSL_APP_NAME: Crypto Signal Lab API
       CSL_APP_ENV: local

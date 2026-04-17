@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from app.schemas.market import Candle
 
-from .base import StrategyOutcome
+from .base import StrategyContext, StrategyOutcome
 from .indicators import ema
 
 
-def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
+def run(
+    timeframe: str,
+    candles: list[Candle],
+    context: StrategyContext | None = None,
+) -> StrategyOutcome:
+    del context
     closes = [candle.close for candle in candles]
 
     fast_period, slow_period = {

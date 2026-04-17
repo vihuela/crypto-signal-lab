@@ -26,6 +26,18 @@ Production deployment is live on Cloudflare:
 
 ## Local Development
 
+Optional external factors for `jiayi-four-factor`:
+
+- `Alternative.me Fear & Greed API` is enabled by default and does not need a key
+- `CSL_GLASSNODE_API_KEY` for `MVRV Z-Score`, `aSOPR`, and `BTC spot ETF net flows`
+- `CSL_SOSOVALUE_API_KEY` for `BTC / ETH spot ETF net flows` via SoSoValue
+- `CSL_FRED_API_KEY` for macro regime inputs based on `M2SL` and `FEDFUNDS`
+- `CSL_FACTOR_CACHE_TTL_SECONDS` to control the in-process cache window, default `900`
+
+These external factors are currently wired into `jiayi-four-factor`, with on-chain data focused on `BTCUSDT`
+and spot ETF flows available for `BTCUSDT` and `ETHUSDT` when the relevant key is present.
+If the keys are missing, the strategy still runs and falls back to OHLCV-based proxy factors.
+
 ### Web
 
 ```bash
@@ -39,6 +51,17 @@ npm run dev:web
 cd crypto-signal-lab
 npm run bootstrap:api
 npm run dev:api
+```
+
+Recommended local secret file for the API:
+
+```bash
+cd crypto-signal-lab/apps/api
+cat > .env.local <<'EOF'
+CSL_GLASSNODE_API_KEY=your_glassnode_key
+CSL_SOSOVALUE_API_KEY=your_sosovalue_key
+CSL_FRED_API_KEY=your_fred_key
+EOF
 ```
 
 ### Batch Backtests
@@ -74,6 +97,15 @@ Deploy both services in production order:
 ```bash
 cd crypto-signal-lab
 npm run deploy:cf
+```
+
+Before deploying the API, set any private factor keys as Cloudflare Worker secrets:
+
+```bash
+cd crypto-signal-lab/apps/api
+printf '%s' 'your_fred_key' | npx wrangler secret put CSL_FRED_API_KEY --env production
+printf '%s' 'your_glassnode_key' | npx wrangler secret put CSL_GLASSNODE_API_KEY --env production
+printf '%s' 'your_sosovalue_key' | npx wrangler secret put CSL_SOSOVALUE_API_KEY --env production
 ```
 
 Tail production logs:

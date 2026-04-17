@@ -11,6 +11,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from app.core.catalog import SUPPORTED_ASSETS, SUPPORTED_STRATEGIES
+from app.services.factor_data import build_strategy_context
 from app.services.market_data import fetch_candles
 from app.services.strategies import build_replay
 
@@ -48,12 +49,19 @@ async def _run_case(
         timeframe=timeframe,
         limit=limit,
     )
+    strategy_context = await build_strategy_context(
+        source_id=source_id,
+        symbol=symbol,
+        candles=candles,
+        strategy_id=strategy_id,
+    )
     replay = build_replay(
         source_id=source_id,
         symbol=symbol,
         timeframe=timeframe,
         strategy_id=strategy_id,
         candles=candles,
+        strategy_context=strategy_context,
     )
 
     return BenchmarkRow(

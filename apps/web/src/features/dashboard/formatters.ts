@@ -11,6 +11,15 @@ export function formatUsd(value: number, locale: Locale) {
   }).format(value);
 }
 
+export function formatCompactUsd(value: number, locale: Locale) {
+  return new Intl.NumberFormat(locale === "zh" ? "zh-CN" : "en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 export function formatPercent(
   value: number,
   locale: Locale,

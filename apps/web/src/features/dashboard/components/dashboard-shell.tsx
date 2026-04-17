@@ -19,6 +19,7 @@ import { ControlSelect } from "@/features/dashboard/components/control-select";
 import { HeroMarioTitle } from "@/features/dashboard/components/hero-mario-title";
 import { LanguageToggle } from "@/features/dashboard/components/language-toggle";
 import { MarketStageChart } from "@/features/dashboard/components/market-stage-chart";
+import { SignalFactorsPanel } from "@/features/dashboard/components/signal-factors-panel";
 import { StrategyLeaderboard } from "@/features/dashboard/components/strategy-leaderboard";
 import {
   formatDatasetWindow,
@@ -39,7 +40,7 @@ import { useLocale } from "@/features/i18n/locale-provider";
 const defaultSource: SourceId = "binance-spot";
 const defaultSymbol = "BTCUSDT";
 const defaultTimeframe: Timeframe = "1d";
-const defaultStrategy: StrategyId = "ema-regime";
+const defaultStrategy: StrategyId = "jiayi-four-factor";
 const LIVE_REFRESH_MS = 15_000;
 
 export function DashboardShell() {
@@ -50,6 +51,9 @@ export function DashboardShell() {
   const [timeframe, setTimeframe] = useState<Timeframe>(defaultTimeframe);
   const [strategy, setStrategy] = useState<StrategyId>(defaultStrategy);
   const [replay, setReplay] = useState<ReplayResponse | null>(null);
+  const [dailyFactorReplay, setDailyFactorReplay] = useState<ReplayResponse | null>(
+    null
+  );
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [leaderboard, setLeaderboard] = useState<StrategyLeaderboardResponse | null>(
     null
@@ -93,11 +97,36 @@ export function DashboardShell() {
           const newOverlay = older.overlay.filter((o) => !existingOverlayTimes.has(o.time));
           const existingMarkerKeys = new Set(prev.markers.map((m) => `${m.time}:${m.kind}`));
           const newMarkers = older.markers.filter((m) => !existingMarkerKeys.has(`${m.time}:${m.kind}`));
+          const mergedDiagnostics =
+            prev.diagnostics && older.diagnostics
+              ? {
+                  ...prev.diagnostics,
+                  factors: older.diagnostics.factors,
+                  factor_series: prev.diagnostics.factor_series.map((series) => {
+                    const olderSeries = older.diagnostics?.factor_series.find(
+                      (candidate) => candidate.factor_id === series.factor_id
+                    );
+                    if (!olderSeries) {
+                      return series;
+                    }
+                    const existingTimes = new Set(series.points.map((point) => point.time));
+                    const newPoints = olderSeries.points.filter(
+                      (point) => !existingTimes.has(point.time)
+                    );
+                    return {
+                      ...series,
+                      source_mode: olderSeries.source_mode,
+                      points: [...newPoints, ...series.points],
+                    };
+                  }),
+                }
+              : prev.diagnostics;
           return {
             ...prev,
             candles: [...newCandles, ...prev.candles],
             overlay: [...newOverlay, ...prev.overlay],
             markers: [...newMarkers, ...prev.markers],
+            diagnostics: mergedDiagnostics,
           };
         });
       } catch {
@@ -186,6 +215,54 @@ export function DashboardShell() {
       }
     };
   }, [dictionary.cards.error, source, symbol, timeframe, strategy]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let refreshTimerId: number | null = null;
+    let requestSequence = 0;
+
+    if (strategy !== "jiayi-four-factor" || timeframe === "1d") {
+      setDailyFactorReplay(null);
+      return;
+    }
+
+    async function load() {
+      const requestId = ++requestSequence;
+
+      try {
+        const replayData = await fetchReplay({
+          source,
+          symbol,
+          timeframe: "1d",
+          strategy,
+          limit: replayLimitByTimeframe["1d"],
+        });
+
+        if (!cancelled && requestId === requestSequence) {
+          setDailyFactorReplay(replayData);
+        }
+      } catch {
+        if (!cancelled && requestId === requestSequence) {
+          setDailyFactorReplay(null);
+        }
+      } finally {
+        if (!cancelled && requestId === requestSequence) {
+          refreshTimerId = window.setTimeout(() => {
+            void load();
+          }, LIVE_REFRESH_MS);
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+      if (refreshTimerId) {
+        window.clearTimeout(refreshTimerId);
+      }
+    };
+  }, [source, symbol, strategy, timeframe]);
 
   useEffect(() => {
     let cancelled = false;
@@ -340,6 +417,10 @@ export function DashboardShell() {
     label: marketCopy.strategies[option.value].label,
     disabled: option.disabled,
   }));
+  const factorDiagnostics =
+    timeframe === "1d"
+      ? replay?.diagnostics ?? null
+      : dailyFactorReplay?.diagnostics ?? null;
 
   return (
     <main className="min-h-screen px-5 py-10 text-[#f5eee4] md:px-10 xl:px-14 2xl:px-20">
@@ -507,6 +588,8 @@ export function DashboardShell() {
             locale={locale}
             markerText={marketCopy.markers}
             chartText={marketCopy.chart}
+            factorCopy={marketCopy.factorPanel}
+            diagnostics={factorDiagnostics}
             loadingLabel={marketCopy.cards.loading}
             liveBadgeLabel={`${marketCopy.stats.live} · ${marketCopy.stats.autoRefresh}`}
             refreshBadgeLabel={marketCopy.stats.refreshing}
@@ -519,6 +602,13 @@ export function DashboardShell() {
           />
 
           <aside className="grid gap-10">
+            <SignalFactorsPanel
+              diagnostics={replay?.diagnostics ?? null}
+              locale={locale}
+              sectionLabel={marketCopy.sections.signalFactors}
+              copy={marketCopy.factorPanel}
+            />
+
             <section className="rounded-2xl border border-white/8 bg-[#101114] px-6 py-6">
               <div className="flex items-start justify-between gap-3">
                 <div>

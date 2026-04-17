@@ -53,10 +53,14 @@ from __future__ import annotations
 
 from app.schemas.market import Candle
 
-from .base import StrategyOutcome
+from .base import StrategyContext, StrategyOutcome
 
 
-def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
+def run(
+    timeframe: str,
+    candles: list[Candle],
+    context: StrategyContext | None = None,
+) -> StrategyOutcome:
     closes = [candle.close for candle in candles]
 
     entries = [False] * len(candles)
@@ -105,6 +109,12 @@ def run(timeframe: str, candles: list[Candle]) -> StrategyOutcome:
 如果策略里要复用通用指标，优先放进：
 
 - `apps/api/app/services/strategies/indicators.py`
+
+如果策略要接额外数据源，例如链上指标、ETF 资金流、宏观序列，优先放进：
+
+- `apps/api/app/services/factor_data.py`
+
+然后通过 `context` 传给策略，不要把联网请求直接写进单个策略文件。
 
 如果是所有策略共享的回测收益计算，放进：
 

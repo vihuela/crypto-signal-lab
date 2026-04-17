@@ -87,4 +87,8 @@ SUPPORTED_STRATEGIES: Final[dict[str, dict[str, str]]] = {
         "label": "Parabolic SAR",
         "style": "stop and reverse",
     },
+    "jiayi-four-factor": {
+        "label": "Four-Factor Resonance",
+        "style": "state resonance",
+    },
 }

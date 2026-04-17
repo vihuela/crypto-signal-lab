@@ -1,4 +1,6 @@
-from typing import Literal
+from __future__ import annotations
+
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -32,6 +34,50 @@ class ReplayStats(BaseModel):
     confidence: float
 
 
+class FactorReading(BaseModel):
+    factor_id: Literal[
+        "fear_greed",
+        "mvrv_z",
+        "sopr",
+        "etf_flow_5d_usd",
+        "macro_regime",
+    ]
+    value: Optional[float]
+    source_mode: Literal["live", "proxy", "unavailable"]
+    long_signal: bool
+    defensive_signal: bool
+
+
+class FactorSeriesPoint(BaseModel):
+    time: str
+    value: Optional[float]
+
+
+class FactorSeries(BaseModel):
+    factor_id: Literal[
+        "fear_greed",
+        "mvrv_z",
+        "sopr",
+        "etf_flow_5d_usd",
+        "macro_regime",
+    ]
+    source_mode: Literal["live", "proxy", "unavailable"]
+    points: list[FactorSeriesPoint]
+
+
+class StrategyDiagnostics(BaseModel):
+    long_score: float
+    defensive_score: float
+    core_long_count: int
+    core_defensive_count: int
+    resonance_threshold: int
+    core_factor_count: int
+    fear_weight: float
+    fear_active: bool
+    factors: list[FactorReading]
+    factor_series: list[FactorSeries]
+
+
 class ReplayResponse(BaseModel):
     source_id: str
     source_label: str
@@ -44,6 +90,7 @@ class ReplayResponse(BaseModel):
     overlay: list[OverlayPoint]
     markers: list[SignalMarker]
     stats: ReplayStats
+    diagnostics: Optional[StrategyDiagnostics] = None
 
 
 class StrategyLeaderboardEntry(BaseModel):

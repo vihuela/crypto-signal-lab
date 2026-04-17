@@ -23,6 +23,7 @@ export const dictionaries = {
     sections: {
       replay: "Market Replay",
       sessionBias: "Session Bias",
+      signalFactors: "Signal Factors",
       watchStack: "Watch Stack",
       strategyBoard: "Strategy Board",
       strategyRack: "Strategy Rack",
@@ -80,6 +81,8 @@ export const dictionaries = {
       signalLine: "Signal",
       histogram: "Histogram",
       zeroLine: "Zero axis",
+      factorSubcharts: "Factor microcharts",
+      factorFixedDaily: "fixed at 1D, not following main timeframe",
     },
     leaderboard: {
       currentLeader: "Current leader",
@@ -98,6 +101,64 @@ export const dictionaries = {
     watch: {
       currentFocus: "Current focus set",
       currentFocusSubtitle: "Source-aware reads across the default asset basket",
+    },
+    factorPanel: {
+      coreResonance: "Core resonance",
+      fearAux: "Fear auxiliary",
+      ready: "3 of 4 aligned",
+      standby: "Waiting for 3 of 4",
+      longScore: "Long score",
+      defensiveScore: "Defensive score",
+      long: "Long",
+      defensive: "Defensive",
+      neutral: "Neutral",
+      live: "Live",
+      proxy: "Estimated",
+      unavailable: "Unavailable",
+      factorNames: {
+        fear_greed: "Fear & Greed",
+        mvrv_z: "MVRV Z-Score",
+        sopr: "aSOPR",
+        etf_flow_5d_usd: "ETF 5D Flow",
+        macro_regime: "Macro Regime",
+      },
+      sources: {
+        fear_greed: {
+          live: "Alternative.me",
+          proxy: "RSI estimate",
+          unavailable: "No feed",
+        },
+        mvrv_z: {
+          live: "Glassnode",
+          proxy: "Price z-score estimate",
+          unavailable: "No feed",
+        },
+        sopr: {
+          live: "Glassnode",
+          proxy: "Pulse EMA ratio estimate",
+          unavailable: "No feed",
+        },
+        etf_flow_5d_usd: {
+          live: "Spot ETF feed",
+          proxy: "OBV spread estimate",
+          unavailable: "No feed",
+        },
+        macro_regime: {
+          live: "FRED",
+          proxy: "Trend estimate",
+          unavailable: "No feed",
+        },
+      },
+      macroLabels: {
+        bullish: "Risk-on",
+        neutral: "Neutral",
+        defensive: "Risk-off",
+      },
+      fearLabels: {
+        bullish: "Extreme fear",
+        neutral: "Balanced",
+        defensive: "Greed",
+      },
     },
     strategies: {
       "ema-regime": {
@@ -135,6 +196,12 @@ export const dictionaries = {
         style: "Stop and reverse",
         thesis:
           "Use a fast trailing stop on directional swings and flip defensive quickly when the parabola breaks.",
+      },
+      "jiayi-four-factor": {
+        label: "Four-Factor Resonance",
+        style: "State resonance",
+        thesis:
+          "Blend fear, value, flow, and regime into one stack. The system waits for three core factors to align before it acts.",
       },
       "community-adapter": {
         label: "Community Adapter",
@@ -189,6 +256,7 @@ export const dictionaries = {
     sections: {
       replay: "市场回放",
       sessionBias: "当前偏向",
+      signalFactors: "信号因子",
       watchStack: "观察列表",
       strategyBoard: "策略对比",
       strategyRack: "策略仓",
@@ -246,6 +314,8 @@ export const dictionaries = {
       signalLine: "信号线",
       histogram: "柱体",
       zeroLine: "零轴",
+      factorSubcharts: "因子子图",
+      factorFixedDaily: "固定日级，不跟随主图周期",
     },
     leaderboard: {
       currentLeader: "当前领先策略",
@@ -264,6 +334,64 @@ export const dictionaries = {
     watch: {
       currentFocus: "当前关注集合",
       currentFocusSubtitle: "围绕默认资产篮子的来源感知读盘",
+    },
+    factorPanel: {
+      coreResonance: "核心共振",
+      fearAux: "恐慌辅助",
+      ready: "已满足 3/4",
+      standby: "等待达到 3/4",
+      longScore: "做多分数",
+      defensiveScore: "防守分数",
+      long: "做多",
+      defensive: "防守",
+      neutral: "中性",
+      live: "实时",
+      proxy: "估算",
+      unavailable: "不可用",
+      factorNames: {
+        fear_greed: "恐慌贪婪",
+        mvrv_z: "MVRV Z-Score",
+        sopr: "aSOPR",
+        etf_flow_5d_usd: "ETF 五日流量",
+        macro_regime: "宏观状态",
+      },
+      sources: {
+        fear_greed: {
+          live: "Alternative.me",
+          proxy: "RSI 估算",
+          unavailable: "无数据",
+        },
+        mvrv_z: {
+          live: "Glassnode",
+          proxy: "价格 z-score 估算",
+          unavailable: "无数据",
+        },
+        sopr: {
+          live: "Glassnode",
+          proxy: "脉冲 EMA 比值估算",
+          unavailable: "无数据",
+        },
+        etf_flow_5d_usd: {
+          live: "现货 ETF 数据",
+          proxy: "OBV 价差估算",
+          unavailable: "无数据",
+        },
+        macro_regime: {
+          live: "FRED",
+          proxy: "趋势估算",
+          unavailable: "无数据",
+        },
+      },
+      macroLabels: {
+        bullish: "风险偏好",
+        neutral: "中性",
+        defensive: "风险收缩",
+      },
+      fearLabels: {
+        bullish: "极度恐慌",
+        neutral: "中性",
+        defensive: "偏贪婪",
+      },
     },
     strategies: {
       "ema-regime": {
@@ -301,6 +429,12 @@ export const dictionaries = {
         style: "止损反转",
         thesis:
           "用更敏感的抛物线追踪止损去抓方向段，一旦趋势结构破坏就更快退回防守。",
+      },
+      "jiayi-four-factor": {
+        label: "四因子共振",
+        style: "状态共振",
+        thesis:
+          "把恐慌、低估、资金流和趋势过滤放进同一个框架里，至少三个核心因子同向才行动。",
       },
       "community-adapter": {
         label: "社区策略接口",

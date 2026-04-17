@@ -8,6 +8,7 @@ from app.schemas.market import (
 )
 
 from .backtest import run_backtest
+from .base import StrategyContext
 from .registry import STRATEGY_RUNNERS
 
 
@@ -16,6 +17,7 @@ def build_strategy_leaderboard(
     symbol: str,
     timeframe: str,
     candles: list[Candle],
+    strategy_context: StrategyContext | None = None,
 ) -> StrategyLeaderboardResponse:
     if len(candles) < 30:
         raise ValueError("Not enough candles to compute strategy leaderboard")
@@ -26,7 +28,7 @@ def build_strategy_leaderboard(
         if strategy_id not in STRATEGY_RUNNERS:
             continue
 
-        outcome = STRATEGY_RUNNERS[strategy_id](timeframe, candles)
+        outcome = STRATEGY_RUNNERS[strategy_id](timeframe, candles, strategy_context)
         stats = run_backtest(
             candles=candles,
             entries=outcome.entries,

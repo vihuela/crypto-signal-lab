@@ -18,9 +18,11 @@ import {
 } from "lightweight-charts";
 
 import { buildMacdSeries } from "@/features/dashboard/chart-indicators";
+import { FactorSubcharts } from "@/features/dashboard/components/factor-subcharts";
 import type {
   Candle,
   OverlayPoint,
+  ReplayResponse,
   SignalMarker,
 } from "@/features/dashboard/types";
 import type { Locale } from "@/features/i18n/dictionaries";
@@ -45,7 +47,36 @@ type MarketStageChartProps = {
     signalLine: string;
     histogram: string;
     zeroLine: string;
+    factorSubcharts: string;
+    factorFixedDaily: string;
   };
+  factorCopy: {
+    long: string;
+    defensive: string;
+    neutral: string;
+    live: string;
+    proxy: string;
+    unavailable: string;
+    factorNames: Record<
+      "fear_greed" | "mvrv_z" | "sopr" | "etf_flow_5d_usd" | "macro_regime",
+      string
+    >;
+    sources: Record<
+      "fear_greed" | "mvrv_z" | "sopr" | "etf_flow_5d_usd" | "macro_regime",
+      Record<"live" | "proxy" | "unavailable", string>
+    >;
+    macroLabels: {
+      bullish: string;
+      neutral: string;
+      defensive: string;
+    };
+    fearLabels: {
+      bullish: string;
+      neutral: string;
+      defensive: string;
+    };
+  };
+  diagnostics: ReplayResponse["diagnostics"];
   loadingLabel: string;
   isLoading: boolean;
   isRefreshing: boolean;
@@ -70,6 +101,8 @@ export function MarketStageChart({
   locale,
   markerText,
   chartText,
+  factorCopy,
+  diagnostics,
   loadingLabel,
   isLoading,
   isRefreshing,
@@ -553,6 +586,15 @@ export function MarketStageChart({
           {loadingLabel}
         </div>
       ) : null}
+      <FactorSubcharts
+        diagnostics={diagnostics}
+        locale={locale}
+        factorCopy={factorCopy}
+        chartCopy={{
+          factorSubcharts: chartText.factorSubcharts,
+          factorFixedDaily: chartText.factorFixedDaily,
+        }}
+      />
       <div className="mt-3 text-xs tracking-[0.04em] text-white/34">
         {interactionHint}
       </div>
