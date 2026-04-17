@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 
 
 API_ROOT = Path(__file__).resolve().parents[2]
-WORKSPACE_ROOT = API_ROOT.parents[1]
+# In local dev this resolves to the repo root; in the container `/app` is the root.
+WORKSPACE_ROOT = API_ROOT.parents[1] if len(API_ROOT.parents) > 1 else API_ROOT
 
 for env_path in (
     WORKSPACE_ROOT / ".env.local",

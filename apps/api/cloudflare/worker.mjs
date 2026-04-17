@@ -6,12 +6,27 @@ const BLOCKED_PUBLIC_PATHS = new Set(["/docs", "/redoc", "/openapi.json"]);
 
 export class CryptoSignalLabApiContainer extends Container {
   defaultPort = 8000;
+  pingEndpoint = "container/healthz";
   sleepAfter = "10m";
   envVars = {
     CSL_FRED_API_KEY: workerEnv.CSL_FRED_API_KEY ?? "",
     CSL_GLASSNODE_API_KEY: workerEnv.CSL_GLASSNODE_API_KEY ?? "",
     CSL_SOSOVALUE_API_KEY: workerEnv.CSL_SOSOVALUE_API_KEY ?? "",
   };
+
+  async fetch(request) {
+    await this.startAndWaitForPorts({
+      ports: this.defaultPort,
+      cancellationOptions: {
+        abort: request.signal,
+        instanceGetTimeoutMS: 20_000,
+        portReadyTimeoutMS: 20_000,
+        waitInterval: 500,
+      },
+    });
+
+    return super.fetch(request);
+  }
 }
 
 export default {
