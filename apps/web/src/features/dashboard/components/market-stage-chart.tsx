@@ -49,11 +49,13 @@ type MarketStageChartProps = {
   loadingLabel: string;
   isLoading: boolean;
   isRefreshing: boolean;
+  isLoadingMore: boolean;
   resetKey: string;
   liveBadgeLabel: string;
   refreshBadgeLabel: string;
   lastUpdatedLabel: string | null;
   interactionHint: string;
+  onLoadMore?: (endTime: string) => void;
 };
 
 export function MarketStageChart({
@@ -71,11 +73,13 @@ export function MarketStageChart({
   loadingLabel,
   isLoading,
   isRefreshing,
+  isLoadingMore,
   resetKey,
   liveBadgeLabel,
   refreshBadgeLabel,
   lastUpdatedLabel,
   interactionHint,
+  onLoadMore,
 }: MarketStageChartProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -91,7 +95,22 @@ export function MarketStageChart({
   const latestPricePulseRef = useRef<HTMLDivElement | null>(null);
   const latestCandleRef = useRef<Candle | null>(null);
   const shouldFitContentRef = useRef(true);
+  const onLoadMoreRef = useRef(onLoadMore);
+  const candlesRef = useRef(candles);
+  const isLoadingMoreRef = useRef(isLoadingMore);
   const macdSeries = buildMacdSeries(candles);
+
+  useEffect(() => {
+    onLoadMoreRef.current = onLoadMore;
+  }, [onLoadMore]);
+
+  useEffect(() => {
+    candlesRef.current = candles;
+  }, [candles]);
+
+  useEffect(() => {
+    isLoadingMoreRef.current = isLoadingMore;
+  }, [isLoadingMore]);
 
   useEffect(() => {
     latestCandleRef.current = candles.at(-1) ?? null;
@@ -286,6 +305,12 @@ export function MarketStageChart({
 
     const handleViewportChange = () => {
       window.requestAnimationFrame(repositionLatestPricePulse);
+
+      if (!chartRef.current || isLoadingMoreRef.current || !onLoadMoreRef.current) return;
+      const range = chartRef.current.timeScale().getVisibleLogicalRange();
+      if (range && range.from < 10 && candlesRef.current.length > 0) {
+        onLoadMoreRef.current(candlesRef.current[0].time);
+      }
     };
 
     chartRef.current = chart;
@@ -513,6 +538,11 @@ export function MarketStageChart({
           <div className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/72">
             {loadingLabel}
           </div>
+        </div>
+      ) : null}
+      {isLoadingMore ? (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[#101113]/80 px-3 py-1.5 text-xs text-white/60 backdrop-blur-sm">
+          {loadingLabel}
         </div>
       ) : null}
       <div className="mt-3 text-xs tracking-[0.04em] text-white/34">

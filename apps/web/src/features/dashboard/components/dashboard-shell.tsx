@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bot, Radar, Waves } from "lucide-react";
 
 import {
@@ -60,6 +60,62 @@ export function DashboardShell() {
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const loadMoreLockRef = useRef(false);
+
+  const handleLoadMore = useCallback(
+    async (endTime: string) => {
+      if (loadMoreLockRef.current || !hasMore) return;
+      loadMoreLockRef.current = true;
+      setIsLoadingMore(true);
+      try {
+        const older = await fetchReplay({
+          source,
+          symbol,
+          timeframe,
+          strategy,
+          limit: replayLimitByTimeframe[timeframe],
+          endTime,
+        });
+        if (older.candles.length < 50) {
+          setHasMore(false);
+        }
+        setReplay((prev) => {
+          if (!prev) return older;
+          const existingTimes = new Set(prev.candles.map((c) => c.time));
+          const newCandles = older.candles.filter((c) => !existingTimes.has(c.time));
+          if (newCandles.length === 0) {
+            setHasMore(false);
+            return prev;
+          }
+          const existingOverlayTimes = new Set(prev.overlay.map((o) => o.time));
+          const newOverlay = older.overlay.filter((o) => !existingOverlayTimes.has(o.time));
+          const existingMarkerKeys = new Set(prev.markers.map((m) => `${m.time}:${m.kind}`));
+          const newMarkers = older.markers.filter((m) => !existingMarkerKeys.has(`${m.time}:${m.kind}`));
+          return {
+            ...prev,
+            candles: [...newCandles, ...prev.candles],
+            overlay: [...newOverlay, ...prev.overlay],
+            markers: [...newMarkers, ...prev.markers],
+          };
+        });
+      } catch {
+        // silently fail — user can retry by scrolling again
+      } finally {
+        setIsLoadingMore(false);
+        setTimeout(() => {
+          loadMoreLockRef.current = false;
+        }, 1000);
+      }
+    },
+    [source, symbol, timeframe, strategy, hasMore]
+  );
+
+  useEffect(() => {
+    setHasMore(true);
+    loadMoreLockRef.current = false;
+  }, [source, symbol, timeframe, strategy]);
 
   useEffect(() => {
     let cancelled = false;
@@ -286,30 +342,32 @@ export function DashboardShell() {
   }));
 
   return (
-    <main className="data-grid min-h-screen px-5 py-6 text-[#f5eee4] md:px-8 xl:px-10">
-      <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-8">
-        <header className="flex flex-col gap-4 rounded-[2rem] border border-white/8 bg-black/22 px-6 py-6 shadow-[0_20px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl md:px-8">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+    <main className="min-h-screen px-5 py-10 text-[#f5eee4] md:px-10 xl:px-14 2xl:px-20">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-14">
+        <header className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
             <div className="max-w-3xl xl:max-w-4xl">
-              <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-white/54">
+              <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.72rem] uppercase tracking-[0.24em] text-white/40">
                 <span
-                  className={`rounded-full border border-white/10 px-3 py-1 ${
-                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
-                  }`}
+                  className={
+                    isZh ? "cjk-copy text-[0.82rem] tracking-[0.12em]" : ""
+                  }
                 >
                   {marketCopy.nav.researchTerminal}
                 </span>
+                <span aria-hidden className="h-px w-6 bg-white/15" />
                 <span
-                  className={`rounded-full border border-white/10 px-3 py-1 ${
-                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
-                  }`}
+                  className={
+                    isZh ? "cjk-copy text-[0.82rem] tracking-[0.12em]" : ""
+                  }
                 >
                   {marketCopy.nav.spotOnly}
                 </span>
+                <span aria-hidden className="h-px w-6 bg-white/15" />
                 <span
-                  className={`rounded-full border border-white/10 px-3 py-1 ${
-                    isZh ? "cjk-copy text-[0.98rem] tracking-normal" : ""
-                  }`}
+                  className={
+                    isZh ? "cjk-copy text-[0.82rem] tracking-[0.12em]" : ""
+                  }
                 >
                   {marketCopy.nav.timeframes}
                 </span>
@@ -328,13 +386,13 @@ export function DashboardShell() {
             </div>
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(640px,1.08fr)] xl:items-center">
-            <div className="xl:pt-5">
+          <div className="grid gap-10 border-t border-white/8 pt-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(640px,1.05fr)] xl:items-start">
+            <div>
               <p
                 lang={isZh ? "zh-CN" : undefined}
-                className={`max-w-[46ch] text-white/62 ${
+                className={`max-w-[50ch] text-white/60 ${
                   isZh
-                    ? "cjk-copy text-[1.02rem] leading-[1.68] tracking-normal"
+                    ? "cjk-copy text-[1.02rem] leading-[1.72] tracking-normal"
                     : "text-lg leading-8 tracking-[0.005em]"
                 }`}
               >
@@ -342,28 +400,23 @@ export function DashboardShell() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:items-stretch">
+            <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
               {primaryReplayMetrics.map((card) => (
-                <article
-                  key={card.label}
-                  className={`rounded-[1.8rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] px-5 py-4 shadow-[0_18px_40px_rgba(0,0,0,0.18)] md:px-6 md:py-5 xl:rounded-[1.55rem] xl:px-4 xl:py-4 ${
-                    primaryReplayMetrics.length === 1 ? "sm:col-span-2 xl:col-span-4" : ""
-                  }`}
-                >
-                  <p className="text-[0.7rem] uppercase tracking-[0.24em] text-white/34">
+                <article key={card.label}>
+                  <p className="text-[0.68rem] uppercase tracking-[0.26em] text-white/38">
                     {card.label}
                   </p>
-                  <p className="mt-3 text-[2.05rem] font-semibold leading-none tracking-[-0.04em] text-[#f8f2e8] md:text-[2.45rem] xl:text-[1.9rem] 2xl:text-[2.15rem]">
+                  <p className="mt-3 text-[2.1rem] font-semibold leading-none tracking-[-0.035em] text-[#f8f2e8] md:text-[2.35rem] xl:text-[2rem] 2xl:text-[2.2rem]">
                     {card.value}
                   </p>
-                  <div className="mt-4 space-y-1.5 xl:mt-3">
+                  <div className="mt-4 space-y-1.5">
                     {card.lines.map((line, index) => (
                       <p
                         key={line}
-                        className={`leading-5 xl:leading-[1.35] ${
+                        className={`leading-[1.45] ${
                           index === 0
-                            ? "text-[1rem] text-white/68 xl:text-[0.93rem]"
-                            : "text-[0.92rem] text-white/48 xl:text-[0.86rem]"
+                            ? "text-[0.95rem] text-white/64"
+                            : "text-[0.85rem] text-white/44"
                         }`}
                       >
                         {line}
@@ -374,19 +427,16 @@ export function DashboardShell() {
               ))}
 
               {secondaryReplayMetrics.map((card) => (
-                <article
-                  key={card.label}
-                  className="rounded-[1.5rem] border border-white/8 bg-white/4 px-4 py-3 md:px-5 md:py-4 xl:rounded-[1.45rem] xl:px-4 xl:py-4"
-                >
-                  <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/36">
+                <article key={card.label}>
+                  <p className="text-[0.68rem] uppercase tracking-[0.26em] text-white/38">
                     {card.label}
                   </p>
-                  <p className="mt-2 text-[1.65rem] font-semibold leading-none tracking-[-0.03em] text-[#f8f2e8] md:text-[1.8rem] xl:text-[1.55rem] 2xl:text-[1.72rem]">
+                  <p className="mt-3 text-[1.55rem] font-semibold leading-none tracking-[-0.025em] text-[#f8f2e8] md:text-[1.7rem] xl:text-[1.5rem] 2xl:text-[1.65rem]">
                     {card.value}
                   </p>
-                  <div className="mt-2 space-y-1 xl:mt-3">
+                  <div className="mt-3 space-y-1">
                     {card.lines.map((line) => (
-                      <p key={line} className="text-[0.92rem] leading-5 text-white/52 xl:text-[0.86rem] xl:leading-[1.35]">
+                      <p key={line} className="text-[0.85rem] leading-[1.45] text-white/50">
                         {line}
                       </p>
                     ))}
@@ -399,7 +449,7 @@ export function DashboardShell() {
         </header>
 
         <section className="sticky top-3 z-40">
-          <div className="rounded-[1.8rem] border border-white/10 bg-[rgba(11,12,14,0.88)] px-4 py-4 shadow-[0_18px_48px_rgba(0,0,0,0.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(11,12,14,0.78)] md:px-5">
+          <div className="rounded-2xl border border-white/8 bg-[rgba(13,14,17,0.82)] px-4 py-3.5 backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(13,14,17,0.7)] md:px-5">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               <ControlSelect
                 label={marketCopy.controls.source}
@@ -425,11 +475,11 @@ export function DashboardShell() {
                 options={translatedStrategyOptions}
                 onChange={(value) => setStrategy(value as StrategyId)}
               />
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/88 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-sm">
-                <span className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
+              <div className="flex flex-col justify-center rounded-xl px-4 py-2 text-sm text-white/80">
+                <span className="mb-1 block text-[0.66rem] uppercase tracking-[0.26em] text-white/40">
                   API
                 </span>
-                <p className="font-medium tracking-[0.03em] text-white/92">
+                <p className="font-medium tracking-[0.02em] text-white/85">
                   FastAPI orchestration
                 </p>
               </div>
@@ -445,7 +495,9 @@ export function DashboardShell() {
             markers={replay?.markers ?? []}
             isLoading={isLoading}
             isRefreshing={isRefreshing}
+            isLoadingMore={isLoadingMore}
             resetKey={`${source}:${symbol}:${timeframe}:${strategy}`}
+            onLoadMore={handleLoadMore}
             symbolLabel={marketCopy.assets[symbol as keyof typeof marketCopy.assets]}
             sourceLabel={marketCopy.sources[source]}
             timeframeLabel={marketCopy.timeframes[timeframe]}
@@ -466,36 +518,36 @@ export function DashboardShell() {
             interactionHint={marketCopy.stats.zoomHint}
           />
 
-          <aside className="grid gap-6">
-            <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-5 py-5">
+          <aside className="grid gap-10">
+            <section className="rounded-2xl border border-white/8 bg-[#101114] px-6 py-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
+                  <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/38">
                     {marketCopy.sections.sessionBias}
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-[#f7efe5]">
+                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.015em] text-[#f7efe5]">
                     {replay
                       ? marketCopy.bias[replay.stats.strategy_bias]
                       : marketCopy.cards.loading}
                   </h2>
                 </div>
-                <Radar className="mt-1 h-5 w-5 text-[#8fb2ff]" />
+                <Radar className="mt-1 h-5 w-5 text-white/55" />
               </div>
 
-              <p className="mt-4 text-base leading-7 text-white/58">
+              <p className="mt-4 text-[0.95rem] leading-[1.7] text-white/58">
                 {replay
                   ? `${marketCopy.strategies[strategy].style} · ${marketCopy.stats.confidencePrefix} ${replay.stats.confidence.toFixed(2)}`
                   : marketCopy.cards.retryHint}
               </p>
 
-              <div className="mt-6 grid gap-3">
-                <div className="rounded-[1.4rem] bg-white/4 p-4">
-                  <p className="text-sm text-white/42">
+              <div className="mt-6 space-y-5 border-t border-white/6 pt-5">
+                <div>
+                  <p className="text-[0.75rem] uppercase tracking-[0.22em] text-white/42">
                     {marketCopy.cards.confidence}
                   </p>
-                  <div className="mt-3 h-2 rounded-full bg-white/8">
+                  <div className="mt-3 h-[3px] rounded-full bg-white/8">
                     <div
-                      className="h-2 rounded-full bg-[#90b3ff]"
+                      className="h-[3px] rounded-full bg-[#d8cdbd]"
                       style={{
                         width: `${Math.max(
                           8,
@@ -504,7 +556,7 @@ export function DashboardShell() {
                       }}
                     />
                   </div>
-                  <p className="mt-3 text-sm text-white/62">
+                  <p className="mt-3 text-[0.9rem] text-white/60">
                     {replay
                       ? `${marketCopy.stats.confidencePrefix} ${replay.stats.confidence.toFixed(
                           2
@@ -513,59 +565,61 @@ export function DashboardShell() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.4rem] bg-white/4 p-4">
-                  <p className="text-sm text-white/42">{marketCopy.cards.researchMode}</p>
-                  <p className="mt-2 text-xl font-semibold text-[#f7efe5]">
+                <div className="border-t border-white/6 pt-5">
+                  <p className="text-[0.75rem] uppercase tracking-[0.22em] text-white/42">
+                    {marketCopy.cards.researchMode}
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-[#f7efe5]">
                     {marketCopy.cards.localOnly}
                   </p>
-                  <p className="mt-2 text-sm text-white/56">{marketCopy.cards.noLive}</p>
+                  <p className="mt-1 text-[0.9rem] text-white/55">{marketCopy.cards.noLive}</p>
                 </div>
 
                 {error ? (
-                  <div className="rounded-[1.4rem] bg-[#2a1816] p-4 text-sm text-[#f4c2b0]">
+                  <div className="border-t border-[#a96554]/40 pt-5 text-sm text-[#f4c2b0]">
                     <p className="font-semibold">{marketCopy.cards.error}</p>
-                    <p className="mt-2">{error}</p>
+                    <p className="mt-1">{error}</p>
                   </div>
                 ) : null}
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-5 py-5">
+            <section className="rounded-2xl border border-white/8 bg-[#101114] px-6 py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
+                  <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/38">
                     {marketCopy.sections.watchStack}
                   </p>
-                  <h2 className="mt-2 text-xl font-semibold text-[#f7efe5]">
+                  <h2 className="mt-3 text-xl font-semibold tracking-[-0.015em] text-[#f7efe5]">
                     {marketCopy.watch.currentFocus}
                   </h2>
                 </div>
-                <Waves className="h-5 w-5 text-[#d29d73]" />
+                <Waves className="h-5 w-5 text-white/55" />
               </div>
-              <p className="mt-3 text-sm leading-6 text-white/52">
+              <p className="mt-3 text-[0.9rem] leading-[1.6] text-white/52">
                 {marketCopy.watch.currentFocusSubtitle}
               </p>
-              <div className="mt-4 space-y-3">
+              <div className="mt-5 divide-y divide-white/6 border-t border-white/6">
                 {watchlist.map((asset) => (
                   <div
                     key={asset.symbol}
-                    className="flex items-center justify-between rounded-[1.2rem] bg-white/4 px-4 py-3"
+                    className="flex items-center justify-between py-3.5"
                   >
                     <div>
-                      <p className="text-base font-semibold text-[#f8f2e8]">
+                      <p className="text-[0.98rem] font-semibold text-[#f8f2e8]">
                         {marketCopy.assets[asset.symbol as keyof typeof marketCopy.assets]}
                       </p>
-                      <p className="text-sm text-white/48">
+                      <p className="text-[0.8rem] text-white/48">
                         {marketCopy.sources[asset.source_id]} ·{" "}
                         {marketCopy.bias[asset.strategy_bias]}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-base font-semibold text-[#f8f2e8]">
+                      <p className="text-[0.98rem] font-semibold tabular-nums text-[#f8f2e8]">
                         {formatUsd(asset.last_close, locale)}
                       </p>
                       <p
-                        className={`text-sm ${
+                        className={`text-[0.82rem] tabular-nums ${
                           asset.change_pct >= 0 ? "text-[#9ed8bf]" : "text-[#f0a987]"
                         }`}
                       >
@@ -601,40 +655,40 @@ export function DashboardShell() {
             copy={marketCopy.leaderboard}
           />
 
-          <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-6 py-6">
+          <section className="rounded-2xl border border-white/8 bg-[#101114] px-6 py-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
+                <p className="text-[0.68rem] uppercase tracking-[0.28em] text-white/38">
                   {marketCopy.sections.strategyRack}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-[#f7efe5]">
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.015em] text-[#f7efe5]">
                   {marketCopy.hero.title}
                 </h2>
               </div>
-              <Bot className="h-5 w-5 text-[#8fb2ff]" />
+              <Bot className="h-5 w-5 text-white/55" />
             </div>
-            <div className="mt-5 grid gap-4">
+            <div className="mt-6 divide-y divide-white/6 border-t border-white/6">
               {strategyOptions.map((strategyOption) => {
                 const copy = marketCopy.strategies[strategyOption.value];
                 return (
                   <article
                     key={strategyOption.value}
-                    className="rounded-[1.5rem] bg-white/4 p-5"
+                    className="py-5 first:pt-5"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-lg font-semibold text-[#f7efe5]">
+                        <p className="text-[1.02rem] font-semibold text-[#f7efe5]">
                           {copy.label}
                         </p>
-                        <p className="mt-1 text-sm text-white/48">{copy.style}</p>
+                        <p className="mt-1 text-[0.85rem] text-white/48">{copy.style}</p>
                       </div>
-                      <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/48">
+                      <span className="text-[0.68rem] uppercase tracking-[0.22em] text-white/50">
                         {strategyOption.disabled
                           ? marketCopy.cards.waiting
                           : marketCopy.cards.available}
                       </span>
                     </div>
-                    <p className="mt-4 max-w-[32ch] text-sm leading-6 text-white/58">
+                    <p className="mt-3 max-w-[36ch] text-[0.9rem] leading-[1.6] text-white/58">
                       {copy.thesis}
                     </p>
                   </article>

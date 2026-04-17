@@ -42,9 +42,17 @@
 
 html {
   background:
-    radial-gradient(circle at top left, rgba(126, 163, 255, 0.16), transparent 30%),
-    radial-gradient(circle at 85% 10%, rgba(203, 138, 91, 0.14), transparent 24%),
-    linear-gradient(180deg, #0b0c0e 0%, #101114 55%, #0c0d10 100%);
+    radial-gradient(circle at 12% 0%, rgba(126, 163, 255, 0.06), transparent 38%),
+    radial-gradient(circle at 92% 4%, rgba(203, 138, 91, 0.05), transparent 32%),
+    #0b0c0e;
+}
+
+.hairline {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hairline-b {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 body {
@@ -85,10 +93,7 @@ a {
 }
 
 .data-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: none;
 }
 
 .hero-title-letter {

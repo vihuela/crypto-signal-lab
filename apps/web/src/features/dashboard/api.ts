@@ -15,6 +15,7 @@ type ReplayParams = {
   timeframe: Timeframe;
   strategy: StrategyId;
   limit?: number;
+  endTime?: string;
   signal?: AbortSignal;
 };
 
@@ -24,15 +25,20 @@ export async function fetchReplay({
   timeframe,
   strategy,
   limit = 1000,
+  endTime,
   signal,
 }: ReplayParams): Promise<ReplayResponse> {
-  const url = buildApiUrl("/api/v1/market/replay", {
+  const params: Record<string, string> = {
     source,
     symbol,
     timeframe,
     strategy,
     limit: String(limit),
-  });
+  };
+  if (endTime) {
+    params.end_time = endTime;
+  }
+  const url = buildApiUrl("/api/v1/market/replay", params);
 
   const response = await fetch(url, {
     cache: "no-store",

@@ -12,8 +12,8 @@ export function LanguageToggle({
   onChange,
 }: LanguageToggleProps) {
   return (
-    <div className="rounded-full border border-white/10 bg-white/5 p-1 text-sm shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-      <div className="mb-1 px-3 pt-2 text-[0.64rem] uppercase tracking-[0.24em] text-white/36">
+    <div className="p-1 text-sm">
+      <div className="mb-1 px-2 pt-1 text-[0.64rem] uppercase tracking-[0.24em] text-white/36">
         {label}
       </div>
       <div className="flex gap-1">

@@ -19,7 +19,7 @@ def _format_time(timestamp_ms: int) -> str:
 
 
 async def fetch_candles(
-    source_id: str, symbol: str, timeframe: str, limit: int = 1000
+    source_id: str, symbol: str, timeframe: str, limit: int = 1000, end_time: str | None = None
 ) -> list[Candle]:
     if source_id not in SUPPORTED_SOURCES:
         raise HTTPException(status_code=400, detail=f"Unsupported source: {source_id}")
@@ -27,25 +27,31 @@ async def fetch_candles(
     if timeframe not in SUPPORTED_TIMEFRAMES:
         raise HTTPException(status_code=400, detail=f"Unsupported timeframe: {timeframe}")
 
+    end_time_ms: int | None = None
+    if end_time:
+        end_time_ms = int(datetime.fromisoformat(end_time.replace("Z", "+00:00")).timestamp() * 1000)
+
     if source_id == "binance-spot":
-        return await _fetch_binance_candles(symbol=symbol, timeframe=timeframe, limit=limit)
+        return await _fetch_binance_candles(symbol=symbol, timeframe=timeframe, limit=limit, end_time_ms=end_time_ms)
 
     if source_id == "bybit-spot":
-        return await _fetch_bybit_candles(symbol=symbol, timeframe=timeframe, limit=limit)
+        return await _fetch_bybit_candles(symbol=symbol, timeframe=timeframe, limit=limit, end_time_ms=end_time_ms)
 
     raise HTTPException(status_code=400, detail=f"Unsupported source: {source_id}")
 
 
 async def _fetch_binance_candles(
-    symbol: str, timeframe: str, limit: int
+    symbol: str, timeframe: str, limit: int, end_time_ms: int | None = None
 ) -> list[Candle]:
     interval = SUPPORTED_TIMEFRAMES[timeframe]["binance"]
     url = f"{SUPPORTED_SOURCES['binance-spot']['base_url']}/api/v3/klines"
-    params = {
+    params: dict[str, str | int] = {
         "symbol": symbol,
         "interval": interval,
-        "limit": min(limit, 1000),
+        "limit": min(limit, 1500),
     }
+    if end_time_ms is not None:
+        params["endTime"] = end_time_ms
 
     async with httpx.AsyncClient(timeout=12.0) as client:
         response = await client.get(url, params=params)
@@ -66,15 +72,17 @@ async def _fetch_binance_candles(
     ]
 
 
-async def _fetch_bybit_candles(symbol: str, timeframe: str, limit: int) -> list[Candle]:
+async def _fetch_bybit_candles(symbol: str, timeframe: str, limit: int, end_time_ms: int | None = None) -> list[Candle]:
     interval = SUPPORTED_TIMEFRAMES[timeframe]["bybit"]
     url = f"{SUPPORTED_SOURCES['bybit-spot']['base_url']}/v5/market/kline"
-    params = {
+    params: dict[str, str | int] = {
         "category": "spot",
         "symbol": symbol,
         "interval": interval,
         "limit": min(limit, 1000),
     }
+    if end_time_ms is not None:
+        params["end"] = end_time_ms
 
     async with httpx.AsyncClient(timeout=12.0) as client:
         response = await client.get(url, params=params)

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -20,10 +21,11 @@ async def market_replay(
     symbol: str = Query("BTCUSDT"),
     timeframe: str = Query("1d"),
     strategy: str = Query("ema-regime"),
-    limit: int = Query(1000, ge=90, le=1000),
+    limit: int = Query(1000, ge=90, le=1500),
+    end_time: Optional[str] = Query(None),
 ) -> ReplayResponse:
     _validate_query(source=source, symbol=symbol, timeframe=timeframe, strategy=strategy)
-    candles = await fetch_candles(source_id=source, symbol=symbol, timeframe=timeframe, limit=limit)
+    candles = await fetch_candles(source_id=source, symbol=symbol, timeframe=timeframe, limit=limit, end_time=end_time)
     return build_replay(
         source_id=source,
         symbol=symbol,
