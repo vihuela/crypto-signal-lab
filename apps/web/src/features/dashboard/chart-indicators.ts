@@ -21,7 +21,18 @@ export type MacdSeries = {
   };
 };
 
-export function buildMacdSeries(candles: Candle[]): MacdSeries {
+type MacdSeriesColors = {
+  positiveHistogram: string;
+  negativeHistogram: string;
+};
+
+export function buildMacdSeries(
+  candles: Candle[],
+  colors: MacdSeriesColors = {
+    positiveHistogram: "rgba(129, 167, 255, 0.72)",
+    negativeHistogram: "rgba(218, 146, 101, 0.72)",
+  }
+): MacdSeries {
   if (candles.length === 0) {
     return {
       macdLine: [],
@@ -80,8 +91,8 @@ export function buildMacdSeries(candles: Candle[]): MacdSeries {
         value: roundTo(histogramValue, 4),
         color:
           histogramValue >= 0
-            ? "rgba(129, 167, 255, 0.72)"
-            : "rgba(218, 146, 101, 0.72)",
+            ? colors.positiveHistogram
+            : colors.negativeHistogram,
       });
     }
   });

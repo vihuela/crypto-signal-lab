@@ -9,6 +9,7 @@ import {
   formatPercent,
   formatPlainNumber,
 } from "@/features/dashboard/formatters";
+import type { DashboardTheme } from "@/features/dashboard/themes/types";
 import type { Locale } from "@/features/i18n/dictionaries";
 
 type StrategyLeaderboardProps = {
@@ -25,6 +26,7 @@ type StrategyLeaderboardProps = {
   selectedStrategyId: StrategyId;
   onSelectStrategy: (strategyId: StrategyId) => void;
   biasLabels: Record<Bias, string>;
+  theme: DashboardTheme;
   copy: {
     currentLeader: string;
     rankedBy: string;
@@ -55,68 +57,154 @@ export function StrategyLeaderboard({
   selectedStrategyId,
   onSelectStrategy,
   biasLabels,
+  theme,
   copy,
 }: StrategyLeaderboardProps) {
   const leader = entries[0];
 
   return (
-    <section className="rounded-[2rem] border border-white/8 bg-[#111317] px-6 py-6 shadow-[0_18px_54px_rgba(0,0,0,0.18)]">
+    <section
+      className="rounded-[2rem] border px-6 py-6"
+      style={{
+        borderColor: "var(--theme-panel-border)",
+        background: "var(--theme-panel)",
+        boxShadow: "var(--theme-shadow-strong)",
+      }}
+      data-theme={theme.id}
+    >
       <div className="max-w-4xl">
-        <p className="text-[0.7rem] uppercase tracking-[0.26em] text-white/34">
+        <p
+          className="text-[0.7rem] uppercase tracking-[0.26em]"
+          style={{ color: "var(--theme-copy-faint)" }}
+        >
           {sectionLabel}
         </p>
-        <h2 className="mt-2 text-2xl font-semibold text-[#f7efe5]">{title}</h2>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-white/52">
-          <span className="rounded-full border border-white/10 px-3 py-1">
+        <h2
+          className="mt-2 text-2xl font-semibold"
+          style={{ color: "var(--theme-title)" }}
+        >
+          {title}
+        </h2>
+        <div
+          className="mt-3 flex flex-wrap items-center gap-2 text-sm"
+          style={{ color: "var(--theme-copy-soft)" }}
+        >
+          <span
+            className="rounded-full border px-3 py-1"
+            style={{
+              borderColor: "var(--theme-chip-border)",
+              background: "var(--theme-chip)",
+            }}
+          >
             {sourceLabel}
           </span>
           {windowDateRange ? (
-            <span className="rounded-full border border-white/10 px-3 py-1">
+            <span
+              className="rounded-full border px-3 py-1"
+              style={{
+                borderColor: "var(--theme-chip-border)",
+                background: "var(--theme-chip)",
+              }}
+            >
               {windowDateRange}
             </span>
           ) : null}
           {windowMeta ? (
-            <span className="rounded-full border border-white/10 px-3 py-1">
+            <span
+              className="rounded-full border px-3 py-1"
+              style={{
+                borderColor: "var(--theme-chip-border)",
+                background: "var(--theme-chip)",
+              }}
+            >
               {windowMeta}
             </span>
           ) : null}
           {buyHoldReturn ? (
-            <span className="rounded-full border border-[#89abff]/26 bg-[#89abff]/8 px-3 py-1 text-[#dbe5ff]">
+            <span
+              className="rounded-full border px-3 py-1"
+              style={{
+                borderColor: "var(--theme-chip-active-border)",
+                background: "var(--theme-chip-active)",
+                color: "var(--theme-copy-strong)",
+              }}
+            >
               {copy.buyHold} {buyHoldReturn}
             </span>
           ) : null}
         </div>
-        <p className="mt-4 max-w-3xl text-sm leading-6 text-white/54">
+        <p
+          className="mt-4 max-w-3xl text-sm leading-6"
+          style={{ color: "var(--theme-copy)" }}
+        >
           {copy.rankedBy} {copy.selectHint}
         </p>
       </div>
 
       {isLoading && entries.length === 0 ? (
-        <div className="mt-6 rounded-[1.6rem] border border-white/8 bg-white/4 px-5 py-10 text-center text-white/56">
+        <div
+          className="mt-6 rounded-[1.6rem] border px-5 py-10 text-center"
+          style={{
+            borderColor: "var(--theme-panel-border)",
+            background: "var(--theme-panel-muted)",
+            color: "var(--theme-copy)",
+          }}
+        >
           {copy.empty}
         </div>
       ) : null}
 
       {error ? (
-        <div className="mt-6 rounded-[1.5rem] bg-[#2a1816] px-4 py-4 text-sm text-[#f4c2b0]">
+        <div
+          className="mt-6 rounded-[1.5rem] border px-4 py-4 text-sm"
+          style={{
+            background: "color-mix(in srgb, var(--theme-negative) 14%, var(--theme-panel))",
+            borderColor: "color-mix(in srgb, var(--theme-negative) 32%, transparent)",
+            color: "var(--theme-copy-strong)",
+          }}
+        >
           {error}
         </div>
       ) : null}
 
       {leader ? (
         <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(260px,0.75fr)_minmax(0,1.25fr)]">
-          <article className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-5 py-5">
-            <p className="text-[0.68rem] uppercase tracking-[0.24em] text-white/36">
+          <article
+            className="rounded-[1.8rem] border px-5 py-5"
+            style={{
+              borderColor: "var(--theme-panel-border-strong)",
+              background: "var(--theme-panel-elevated)",
+            }}
+          >
+            <p
+              className="text-[0.68rem] uppercase tracking-[0.24em]"
+              style={{ color: "var(--theme-copy-faint)" }}
+            >
               {copy.currentLeader}
             </p>
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xl font-semibold text-[#f7efe5]">
+                <p
+                  className="text-xl font-semibold"
+                  style={{ color: "var(--theme-title)" }}
+                >
                   {leader.strategy_label}
                 </p>
-                <p className="mt-1 text-sm text-white/48">{leader.strategy_style}</p>
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: "var(--theme-copy-soft)" }}
+                >
+                  {leader.strategy_style}
+                </p>
               </div>
-              <span className="rounded-full border border-[#8aa9ff]/30 bg-[#8aa9ff]/10 px-3 py-1 text-[0.72rem] uppercase tracking-[0.18em] text-[#dbe5ff]">
+              <span
+                className="rounded-full border px-3 py-1 text-[0.72rem] uppercase tracking-[0.18em]"
+                style={{
+                  borderColor: "var(--theme-chip-active-border)",
+                  background: "var(--theme-chip-active)",
+                  color: "var(--theme-copy-strong)",
+                }}
+              >
                 #1
               </span>
             </div>
@@ -124,14 +212,17 @@ export function StrategyLeaderboard({
               <MetricTile
                 label={copy.edge}
                 value={formatPercent(leader.edge_vs_hold_pct, locale)}
+                theme={theme}
               />
               <MetricTile
                 label={copy.strategyReturn}
                 value={formatPercent(leader.total_return_pct, locale)}
+                theme={theme}
               />
               <MetricTile
                 label={copy.drawdown}
                 value={formatPercent(leader.max_drawdown_pct, locale)}
+                theme={theme}
               />
               <MetricTile
                 label={copy.confidence}
@@ -139,6 +230,7 @@ export function StrategyLeaderboard({
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
+                theme={theme}
               />
             </div>
           </article>
@@ -152,29 +244,57 @@ export function StrategyLeaderboard({
                   key={entry.strategy_id}
                   type="button"
                   onClick={() => onSelectStrategy(entry.strategy_id as StrategyId)}
-                  className={`group grid gap-4 rounded-[1.45rem] border px-4 py-4 text-left transition duration-200 ease-out hover:-translate-y-[1px] ${
+                  className="group grid gap-4 rounded-[1.45rem] border px-4 py-4 text-left transition duration-200 ease-out hover:-translate-y-[1px]"
+                  style={
                     isSelected
-                      ? "border-[#89abff]/44 bg-[linear-gradient(180deg,rgba(137,171,255,0.16),rgba(255,255,255,0.05))] shadow-[0_12px_30px_rgba(15,18,28,0.26)]"
-                      : "border-white/8 bg-white/4 hover:border-white/14 hover:bg-white/[0.055]"
-                  }`}
+                      ? {
+                          borderColor: "var(--theme-control-active-border)",
+                          background: "var(--theme-control-active)",
+                          boxShadow: "var(--theme-shadow)",
+                        }
+                      : {
+                          borderColor: "var(--theme-panel-border)",
+                          background: "var(--theme-panel-muted)",
+                        }
+                  }
                 >
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <div className="flex items-start gap-4">
-                      <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border border-white/10 bg-black/20 text-sm font-semibold text-[#f7efe5]">
+                      <span
+                        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border text-sm font-semibold"
+                        style={{
+                          borderColor: "var(--theme-panel-border)",
+                          background: "var(--theme-panel-strong)",
+                          color: "var(--theme-copy-strong)",
+                        }}
+                      >
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-semibold text-[#f7efe5]">
+                          <p
+                            className="text-lg font-semibold"
+                            style={{ color: "var(--theme-title)" }}
+                          >
                             {entry.strategy_label}
                           </p>
                           {isSelected ? (
-                            <span className="rounded-full border border-[#8aa9ff]/36 bg-[#8aa9ff]/10 px-2.5 py-1 text-[0.68rem] uppercase tracking-[0.18em] text-[#dbe5ff]">
+                            <span
+                              className="rounded-full border px-2.5 py-1 text-[0.68rem] uppercase tracking-[0.18em]"
+                              style={{
+                                borderColor: "var(--theme-chip-active-border)",
+                                background: "var(--theme-chip-active)",
+                                color: "var(--theme-copy-strong)",
+                              }}
+                            >
                               {copy.selected}
                             </span>
                           ) : null}
                         </div>
-                        <p className="mt-1 text-sm text-white/48">
+                        <p
+                          className="mt-1 text-sm"
+                          style={{ color: "var(--theme-copy-soft)" }}
+                        >
                           {entry.strategy_style} · {biasLabels[entry.strategy_bias]}
                         </p>
                       </div>
@@ -185,24 +305,33 @@ export function StrategyLeaderboard({
                         label={copy.edge}
                         value={formatPercent(entry.edge_vs_hold_pct, locale)}
                         tone={entry.edge_vs_hold_pct >= 0 ? "positive" : "muted"}
+                        theme={theme}
                       />
                       <ScorePill
                         label={copy.strategyReturn}
                         value={formatPercent(entry.total_return_pct, locale)}
                         tone={entry.total_return_pct >= 0 ? "positive" : "muted"}
+                        theme={theme}
                       />
                       <ScorePill
                         label={copy.drawdown}
                         value={formatPercent(entry.max_drawdown_pct, locale)}
                         tone="muted"
+                        theme={theme}
                       />
                     </div>
                   </div>
 
-                  <div className="grid gap-2 text-sm text-white/52 sm:grid-cols-3">
+                  <div
+                    className="grid gap-2 text-sm sm:grid-cols-3"
+                    style={{ color: "var(--theme-copy)" }}
+                  >
                     <span>
                       {copy.winRate}{" "}
-                      <strong className="font-medium text-white/72">
+                      <strong
+                        className="font-medium"
+                        style={{ color: "var(--theme-copy-strong)" }}
+                      >
                         {formatPercent(entry.win_rate_pct, locale, {
                           signDisplay: "never",
                         })}
@@ -210,13 +339,19 @@ export function StrategyLeaderboard({
                     </span>
                     <span>
                       {copy.trades}{" "}
-                      <strong className="font-medium text-white/72">
+                      <strong
+                        className="font-medium"
+                        style={{ color: "var(--theme-copy-strong)" }}
+                      >
                         {entry.trade_count}
                       </strong>
                     </span>
                     <span>
                       {copy.confidence}{" "}
-                      <strong className="font-medium text-white/72">
+                      <strong
+                        className="font-medium"
+                        style={{ color: "var(--theme-copy-strong)" }}
+                      >
                         {formatPlainNumber(entry.confidence, locale, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
@@ -234,13 +369,30 @@ export function StrategyLeaderboard({
   );
 }
 
-function MetricTile({ label, value }: { label: string; value: string }) {
+function MetricTile({
+  label,
+  value,
+  theme,
+}: {
+  label: string;
+  value: string;
+  theme: DashboardTheme;
+}) {
   return (
-    <div className="rounded-[1.1rem] bg-black/18 px-3 py-3">
-      <p className="text-[0.68rem] uppercase tracking-[0.22em] text-white/32">
+    <div
+      className="rounded-[1.1rem] px-3 py-3"
+      style={{ background: "var(--theme-panel-strong)" }}
+      data-theme={theme.id}
+    >
+      <p
+        className="text-[0.68rem] uppercase tracking-[0.22em]"
+        style={{ color: "var(--theme-copy-faint)" }}
+      >
         {label}
       </p>
-      <p className="mt-2 text-lg font-semibold text-[#f7efe5]">{value}</p>
+      <p className="mt-2 text-lg font-semibold" style={{ color: "var(--theme-title)" }}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -249,20 +401,33 @@ function ScorePill({
   label,
   value,
   tone,
+  theme,
 }: {
   label: string;
   value: string;
   tone: "positive" | "muted";
+  theme: DashboardTheme;
 }) {
   return (
-    <div className="rounded-[1rem] bg-black/18 px-3 py-2.5">
-      <p className="text-[0.66rem] uppercase tracking-[0.2em] text-white/32">
+    <div
+      className="rounded-[1rem] px-3 py-2.5"
+      style={{ background: "var(--theme-panel-strong)" }}
+      data-theme={theme.id}
+    >
+      <p
+        className="text-[0.66rem] uppercase tracking-[0.2em]"
+        style={{ color: "var(--theme-copy-faint)" }}
+      >
         {label}
       </p>
       <p
-        className={`mt-1 text-sm font-semibold ${
-          tone === "positive" ? "text-[#cfe2ff]" : "text-[#f7efe5]"
-        }`}
+        className="mt-1 text-sm font-semibold"
+        style={{
+          color:
+            tone === "positive"
+              ? "var(--theme-positive)"
+              : "var(--theme-copy-strong)",
+        }}
       >
         {value}
       </p>

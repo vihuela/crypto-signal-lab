@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import type { DashboardTheme } from "@/features/dashboard/themes/types";
 
 type SelectOption = {
   label: string;
@@ -11,6 +12,7 @@ type ControlSelectProps = {
   value: string;
   options: SelectOption[];
   onChange: (value: string) => void;
+  theme: DashboardTheme;
 };
 
 export function ControlSelect({
@@ -18,30 +20,50 @@ export function ControlSelect({
   value,
   options,
   onChange,
+  theme,
 }: ControlSelectProps) {
   return (
-    <label className="rounded-[1.4rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/88 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] backdrop-blur-sm">
-      <span className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em] text-white/38">
+    <label
+      className="rounded-[1.4rem] border px-4 py-3 text-sm backdrop-blur-sm"
+      style={{
+        borderColor: "var(--theme-control-border)",
+        background: "var(--theme-control)",
+        color: "var(--theme-copy-strong)",
+        boxShadow: "var(--theme-shadow)",
+      }}
+      data-theme={theme.id}
+    >
+      <span
+        className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em]"
+        style={{ color: "var(--theme-copy-faint)" }}
+      >
         {label}
       </span>
       <div className="relative">
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full appearance-none bg-transparent pr-8 font-medium tracking-[0.03em] text-white/92 outline-none"
+          className="w-full appearance-none bg-transparent pr-8 font-medium tracking-[0.03em] outline-none"
+          style={{ color: "var(--theme-copy-strong)" }}
         >
           {options.map((option) => (
             <option
               key={option.value}
               value={option.value}
               disabled={option.disabled}
-              className="bg-[#101113] text-white"
+              style={{
+                background: "var(--theme-panel-strong)",
+                color: "var(--theme-copy-strong)",
+              }}
             >
               {option.label}
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-white/38" />
+        <ChevronDown
+          className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2"
+          style={{ color: "var(--theme-copy-faint)" }}
+        />
       </div>
     </label>
   );

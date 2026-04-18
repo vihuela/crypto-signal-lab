@@ -19,6 +19,7 @@ import {
 
 import { buildMacdSeries } from "@/features/dashboard/chart-indicators";
 import { FactorSubcharts } from "@/features/dashboard/components/factor-subcharts";
+import type { DashboardTheme } from "@/features/dashboard/themes/types";
 import type {
   Candle,
   OverlayPoint,
@@ -87,6 +88,7 @@ type MarketStageChartProps = {
   lastUpdatedLabel: string | null;
   interactionHint: string;
   onLoadMore?: (endTime: string) => void;
+  theme: DashboardTheme;
 };
 
 export function MarketStageChart({
@@ -113,6 +115,7 @@ export function MarketStageChart({
   lastUpdatedLabel,
   interactionHint,
   onLoadMore,
+  theme,
 }: MarketStageChartProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -132,7 +135,10 @@ export function MarketStageChart({
   const candlesRef = useRef(candles);
   const isLoadingMoreRef = useRef(isLoadingMore);
   const prevLogicalFromRef = useRef<number | null>(null);
-  const macdSeries = buildMacdSeries(candles);
+  const macdSeries = buildMacdSeries(candles, {
+    positiveHistogram: theme.chart.histogramPositive,
+    negativeHistogram: theme.chart.histogramNegative,
+  });
 
   useEffect(() => {
     onLoadMoreRef.current = onLoadMore;
@@ -158,36 +164,36 @@ export function MarketStageChart({
     const chart = createChart(containerRef.current, {
       autoSize: true,
       layout: {
-        background: { type: ColorType.Solid, color: "#101113" },
-        textColor: "rgba(241, 236, 226, 0.62)",
+        background: { type: ColorType.Solid, color: theme.chart.background },
+        textColor: theme.chart.textColor,
         attributionLogo: false,
         panes: {
           enableResize: true,
-          separatorColor: "rgba(255,255,255,0.07)",
-          separatorHoverColor: "rgba(129, 167, 255, 0.12)",
+          separatorColor: theme.chart.paneSeparator,
+          separatorHoverColor: theme.chart.paneSeparatorHover,
         },
       },
       grid: {
-        vertLines: { color: "rgba(255,255,255,0.04)" },
-        horzLines: { color: "rgba(255,255,255,0.06)" },
+        vertLines: { color: theme.chart.gridVertical },
+        horzLines: { color: theme.chart.gridHorizontal },
       },
       crosshair: {
         mode: CrosshairMode.Magnet,
         vertLine: {
-          color: "rgba(170, 203, 255, 0.34)",
+          color: theme.chart.crosshairCool,
           width: 1,
-          labelBackgroundColor: "#7ba6ff",
+          labelBackgroundColor: theme.chart.crosshairCoolLabel,
         },
         horzLine: {
-          color: "rgba(255, 187, 92, 0.22)",
-          labelBackgroundColor: "#c78255",
+          color: theme.chart.crosshairWarm,
+          labelBackgroundColor: theme.chart.crosshairWarmLabel,
         },
       },
       rightPriceScale: {
-        borderColor: "rgba(255,255,255,0.08)",
+        borderColor: theme.chart.border,
       },
       timeScale: {
-        borderColor: "rgba(255,255,255,0.08)",
+        borderColor: theme.chart.border,
         timeVisible: true,
         rightOffset: 8,
       },
@@ -204,12 +210,12 @@ export function MarketStageChart({
     const candlesticks = chart.addSeries(
       CandlestickSeries,
       {
-        upColor: "#bfe2d3",
-        downColor: "#d07e57",
-        wickUpColor: "#bfe2d3",
-        wickDownColor: "#d07e57",
+        upColor: theme.chart.candleUp,
+        downColor: theme.chart.candleDown,
+        wickUpColor: theme.chart.candleUp,
+        wickDownColor: theme.chart.candleDown,
         borderVisible: false,
-        priceLineColor: "#c8e2d5",
+        priceLineColor: theme.chart.priceLine,
         lastValueVisible: true,
       },
       0
@@ -218,7 +224,7 @@ export function MarketStageChart({
     const regime = chart.addSeries(
       LineSeries,
       {
-        color: "#8aa9ff",
+        color: theme.chart.overlay,
         lineWidth: 2,
         lineStyle: LineStyle.Dashed,
         priceLineVisible: false,
@@ -251,7 +257,7 @@ export function MarketStageChart({
     const macdLine = chart.addSeries(
       LineSeries,
       {
-        color: "#88abff",
+        color: theme.chart.macdLine,
         lineWidth: 2,
         priceLineVisible: false,
         lastValueVisible: false,
@@ -261,7 +267,7 @@ export function MarketStageChart({
     const macdSignal = chart.addSeries(
       LineSeries,
       {
-        color: "#d99a6c",
+        color: theme.chart.macdSignal,
         lineWidth: 2,
         lineStyle: LineStyle.Dashed,
         priceLineVisible: false,
@@ -272,7 +278,7 @@ export function MarketStageChart({
     const macdZero = chart.addSeries(
       LineSeries,
       {
-        color: "rgba(255,255,255,0.16)",
+        color: theme.chart.macdZero,
         lineWidth: 1,
         lineStyle: LineStyle.Dotted,
         priceLineVisible: false,
@@ -380,7 +386,108 @@ export function MarketStageChart({
       chart.remove();
       chartRef.current = null;
     };
-  }, []);
+  }, [theme]);
+
+  useEffect(() => {
+    if (
+      !chartRef.current ||
+      !candlesticksRef.current ||
+      !regimeRef.current ||
+      !volumeRef.current ||
+      !macdLineRef.current ||
+      !macdSignalRef.current ||
+      !macdHistogramRef.current ||
+      !macdZeroRef.current
+    ) {
+      return;
+    }
+
+    chartRef.current.applyOptions({
+      layout: {
+        background: { type: ColorType.Solid, color: theme.chart.background },
+        textColor: theme.chart.textColor,
+        attributionLogo: false,
+        panes: {
+          enableResize: true,
+          separatorColor: theme.chart.paneSeparator,
+          separatorHoverColor: theme.chart.paneSeparatorHover,
+        },
+      },
+      grid: {
+        vertLines: { color: theme.chart.gridVertical },
+        horzLines: { color: theme.chart.gridHorizontal },
+      },
+      crosshair: {
+        mode: CrosshairMode.Magnet,
+        vertLine: {
+          color: theme.chart.crosshairCool,
+          width: 1,
+          labelBackgroundColor: theme.chart.crosshairCoolLabel,
+        },
+        horzLine: {
+          color: theme.chart.crosshairWarm,
+          labelBackgroundColor: theme.chart.crosshairWarmLabel,
+        },
+      },
+      rightPriceScale: {
+        borderColor: theme.chart.border,
+      },
+      timeScale: {
+        borderColor: theme.chart.border,
+        timeVisible: true,
+        rightOffset: 8,
+      },
+    });
+
+    candlesticksRef.current.applyOptions({
+      upColor: theme.chart.candleUp,
+      downColor: theme.chart.candleDown,
+      wickUpColor: theme.chart.candleUp,
+      wickDownColor: theme.chart.candleDown,
+      borderVisible: false,
+      priceLineColor: theme.chart.priceLine,
+      lastValueVisible: true,
+    });
+    regimeRef.current.applyOptions({
+      color: theme.chart.overlay,
+      lineWidth: 2,
+      lineStyle: LineStyle.Dashed,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    volumeRef.current.applyOptions({
+      priceFormat: { type: "volume" },
+      priceScaleId: "",
+      lastValueVisible: false,
+      priceLineVisible: false,
+    });
+    macdLineRef.current.applyOptions({
+      color: theme.chart.macdLine,
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    macdSignalRef.current.applyOptions({
+      color: theme.chart.macdSignal,
+      lineWidth: 2,
+      lineStyle: LineStyle.Dashed,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    macdHistogramRef.current.applyOptions({
+      priceFormat: { type: "price", precision: 4, minMove: 0.0001 },
+      base: 0,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+    macdZeroRef.current.applyOptions({
+      color: theme.chart.macdZero,
+      lineWidth: 1,
+      lineStyle: LineStyle.Dotted,
+      priceLineVisible: false,
+      lastValueVisible: false,
+    });
+  }, [theme]);
 
   useEffect(() => {
     shouldFitContentRef.current = true;
@@ -421,8 +528,8 @@ export function MarketStageChart({
         value: candle.volume,
         color:
           index > 0 && candle.close >= candles[index - 1].close
-            ? "rgba(121, 156, 255, 0.42)"
-            : "rgba(255, 187, 92, 0.32)",
+            ? theme.chart.volumeUp
+            : theme.chart.volumeDown,
       }))
     );
     macdLineRef.current.setData(
@@ -454,7 +561,10 @@ export function MarketStageChart({
       markers.map((marker) => ({
         time: toChartTime(marker.time),
         position: marker.kind === "entry" ? "belowBar" : "aboveBar",
-        color: marker.kind === "entry" ? "#9dd4bc" : "#f3a673",
+        color:
+          marker.kind === "entry"
+            ? theme.chart.markerEntry
+            : theme.chart.markerExit,
         shape: marker.kind === "entry" ? "arrowUp" : "arrowDown",
         text: marker.kind === "entry" ? markerText.entry : markerText.exit,
       }))
@@ -507,63 +617,121 @@ export function MarketStageChart({
     markerText.exit,
     markers,
     overlay,
+    theme,
   ]);
 
   return (
     <div
       ref={wrapperRef}
-      className="relative overflow-hidden rounded-[2rem] border border-white/8 bg-[#101113] p-4 shadow-[0_24px_90px_rgba(0,0,0,0.34)]"
+      className="relative overflow-hidden rounded-[2rem] border p-4"
+      style={{
+        borderColor: "var(--theme-panel-border)",
+        background: "var(--theme-panel)",
+        boxShadow: "var(--theme-shadow-strong)",
+      }}
+      data-theme={theme.id}
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl">
-          <p className="text-[0.72rem] uppercase tracking-[0.24em] text-white/34">
+          <p
+            className="text-[0.72rem] uppercase tracking-[0.24em]"
+            style={{ color: "var(--theme-copy-faint)" }}
+          >
             {locale === "zh" ? "市场回放" : "Market Replay"}
           </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-[0.02em] text-[#f5eee4]">
+          <h2
+            className="mt-2 text-xl font-semibold tracking-[0.02em]"
+            style={{ color: "var(--theme-title)" }}
+          >
             {sourceLabel} · {symbolLabel} · {strategyLabel}
           </h2>
-          <p className="mt-2 text-sm text-white/46">
+          <p className="mt-2 text-sm" style={{ color: "var(--theme-copy-soft)" }}>
             {chartText.macdPane} · {overlayLabel}
           </p>
         </div>
-        <div className="flex flex-wrap justify-end gap-2 text-xs text-white/56">
-          <span className="rounded-full border border-[#8aa9ff]/30 bg-[#8aa9ff]/8 px-3 py-1.5 text-[#d9e4ff]">
+        <div
+          className="flex flex-wrap justify-end gap-2 text-xs"
+          style={{ color: "var(--theme-copy)" }}
+        >
+          <span
+            className="rounded-full border px-3 py-1.5"
+            style={{
+              borderColor: "var(--theme-chip-active-border)",
+              background: "var(--theme-chip-active)",
+              color: "var(--theme-copy-strong)",
+            }}
+          >
             {isRefreshing ? refreshBadgeLabel : liveBadgeLabel}
           </span>
           {lastUpdatedLabel ? (
-            <span className="rounded-full border border-white/10 px-3 py-1.5">
+            <span
+              className="rounded-full border px-3 py-1.5"
+              style={{
+                borderColor: "var(--theme-chip-border)",
+                background: "var(--theme-chip)",
+              }}
+            >
               {lastUpdatedLabel}
             </span>
           ) : null}
-          <span className="rounded-full border border-white/10 px-3 py-1.5">
+          <span
+            className="rounded-full border px-3 py-1.5"
+            style={{
+              borderColor: "var(--theme-chip-border)",
+              background: "var(--theme-chip)",
+            }}
+          >
             {timeframeLabel}
           </span>
-          <span className="rounded-full border border-white/10 px-3 py-1.5">
+          <span
+            className="rounded-full border px-3 py-1.5"
+            style={{
+              borderColor: "var(--theme-chip-border)",
+              background: "var(--theme-chip)",
+            }}
+          >
             {candles.length} {locale === "zh" ? "根K线" : "candles"}
           </span>
-          <span className="rounded-full border border-white/10 px-3 py-1.5">
+          <span
+            className="rounded-full border px-3 py-1.5"
+            style={{
+              borderColor: "var(--theme-chip-border)",
+              background: "var(--theme-chip)",
+            }}
+          >
             {overlayLabel}
           </span>
         </div>
       </div>
 
-      <div className="mb-3 grid gap-2 text-xs text-white/54 md:grid-cols-4">
+      <div
+        className="mb-3 grid gap-2 text-xs md:grid-cols-4"
+        style={{ color: "var(--theme-copy)" }}
+      >
         <IndicatorPill
           label={chartText.macdLine}
           value={formatIndicatorValue(macdSeries.latest.macd)}
           tone="cool"
+          theme={theme}
         />
         <IndicatorPill
           label={chartText.signalLine}
           value={formatIndicatorValue(macdSeries.latest.signal)}
           tone="warm"
+          theme={theme}
         />
         <IndicatorPill
           label={chartText.histogram}
           value={formatIndicatorValue(macdSeries.latest.histogram)}
           tone={macdSeries.latest.histogram !== null && macdSeries.latest.histogram >= 0 ? "cool" : "warm"}
+          theme={theme}
         />
-        <IndicatorPill label={chartText.zeroLine} value="0.00" tone="neutral" />
+        <IndicatorPill
+          label={chartText.zeroLine}
+          value="0.00"
+          tone="neutral"
+          theme={theme}
+        />
       </div>
 
       <div ref={containerRef} className="h-[500px] w-full md:h-[540px]" />
@@ -571,18 +739,45 @@ export function MarketStageChart({
         ref={latestPricePulseRef}
         className="pointer-events-none absolute z-20 opacity-0 transition-opacity duration-300"
       >
-        <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8aa9ff]/16 animate-ping" />
-        <span className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#dce6ff]/90 bg-[#8aa9ff] shadow-[0_0_0_4px_rgba(138,169,255,0.15),0_0_18px_rgba(138,169,255,0.5)]" />
+        <span
+          className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full animate-ping"
+          style={{ background: theme.chart.pulseHalo }}
+        />
+        <span
+          className="absolute left-1/2 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border"
+          style={{
+            borderColor: theme.chart.pulseCore,
+            background: theme.chart.priceLine,
+            boxShadow: `0 0 0 4px ${theme.chart.pulseHalo}, 0 0 18px ${theme.chart.pulseRing}`,
+          }}
+        />
       </div>
       {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#101113]/72 backdrop-blur-sm">
-          <div className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/72">
+        <div
+          className="absolute inset-0 flex items-center justify-center backdrop-blur-sm"
+          style={{ background: "color-mix(in srgb, var(--theme-panel-strong) 72%, transparent)" }}
+        >
+          <div
+            className="rounded-full border px-4 py-2 text-sm"
+            style={{
+              borderColor: "var(--theme-chip-border)",
+              background: "var(--theme-chip)",
+              color: "var(--theme-copy)",
+            }}
+          >
             {loadingLabel}
           </div>
         </div>
       ) : null}
       {isLoadingMore ? (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[#101113]/80 px-3 py-1.5 text-xs text-white/60 backdrop-blur-sm">
+        <div
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-sm"
+          style={{
+            borderColor: "var(--theme-chip-border)",
+            background: "color-mix(in srgb, var(--theme-panel-strong) 86%, transparent)",
+            color: "var(--theme-copy)",
+          }}
+        >
           {loadingLabel}
         </div>
       ) : null}
@@ -594,17 +789,33 @@ export function MarketStageChart({
           factorSubcharts: chartText.factorSubcharts,
           factorFixedDaily: chartText.factorFixedDaily,
         }}
+        theme={theme}
       />
-      <div className="mt-3 text-xs tracking-[0.04em] text-white/34">
+      <div
+        className="mt-3 text-xs tracking-[0.04em]"
+        style={{ color: "var(--theme-copy-faint)" }}
+      >
         {interactionHint}
       </div>
-      <div className="mt-4 grid gap-2 text-sm text-white/56 md:grid-cols-3 xl:grid-cols-6">
-        <LegendItem color="#bfe2d3" label={locale === "zh" ? "上涨收盘K线" : "up-close candles"} />
-        <LegendItem color="#8aa9ff" label={overlayLabel} />
-        <LegendItem color="#88abff" label={chartText.macdLine} />
-        <LegendItem color="#d99a6c" label={chartText.signalLine} />
-        <LegendItem color="#7ea3ff" label={chartText.histogram} />
-        <LegendItem color="#f3a673" label={locale === "zh" ? "离场 / 防守" : "exit / defensive"} />
+      <div
+        className="mt-4 grid gap-2 text-sm md:grid-cols-3 xl:grid-cols-6"
+        style={{ color: "var(--theme-copy)" }}
+      >
+        <LegendItem
+          color={theme.chart.candleUp}
+          label={locale === "zh" ? "上涨收盘K线" : "up-close candles"}
+        />
+        <LegendItem color={theme.chart.overlay} label={overlayLabel} />
+        <LegendItem color={theme.chart.macdLine} label={chartText.macdLine} />
+        <LegendItem color={theme.chart.macdSignal} label={chartText.signalLine} />
+        <LegendItem
+          color={theme.chart.histogramPositive}
+          label={chartText.histogram}
+        />
+        <LegendItem
+          color={theme.chart.markerExit}
+          label={locale === "zh" ? "离场 / 防守" : "exit / defensive"}
+        />
       </div>
     </div>
   );
@@ -623,20 +834,40 @@ function IndicatorPill({
   label,
   value,
   tone,
+  theme,
 }: {
   label: string;
   value: string;
   tone: "cool" | "warm" | "neutral";
+  theme: DashboardTheme;
 }) {
-  const toneClass =
+  const toneStyle =
     tone === "cool"
-      ? "border-[#88abff]/26 bg-[#88abff]/8 text-[#dae5ff]"
+      ? {
+          borderColor: "color-mix(in srgb, var(--theme-accent) 32%, transparent)",
+          background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)",
+          color: "var(--theme-copy-strong)",
+        }
       : tone === "warm"
-      ? "border-[#d99a6c]/26 bg-[#d99a6c]/8 text-[#f1d2bb]"
-      : "border-white/10 bg-white/[0.03] text-white/64";
+        ? {
+            borderColor:
+              "color-mix(in srgb, var(--theme-accent-3) 36%, transparent)",
+            background:
+              "color-mix(in srgb, var(--theme-accent-3) 12%, transparent)",
+            color: "var(--theme-copy-strong)",
+          }
+        : {
+            borderColor: "var(--theme-chip-border)",
+            background: "var(--theme-chip)",
+            color: "var(--theme-copy)",
+          };
 
   return (
-    <div className={`rounded-[1rem] border px-3 py-2 ${toneClass}`}>
+    <div
+      className="rounded-[1rem] border px-3 py-2"
+      style={toneStyle}
+      data-theme={theme.id}
+    >
       <p className="text-[0.66rem] uppercase tracking-[0.2em] opacity-60">{label}</p>
       <p className="mt-1 text-sm font-semibold text-inherit">{value}</p>
     </div>

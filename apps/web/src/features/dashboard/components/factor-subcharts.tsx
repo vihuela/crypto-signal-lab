@@ -7,6 +7,7 @@ import {
   formatDate,
   formatPlainNumber,
 } from "@/features/dashboard/formatters";
+import type { DashboardTheme } from "@/features/dashboard/themes/types";
 import type {
   FactorId,
   FactorSourceMode,
@@ -45,6 +46,7 @@ type Props = {
   locale: Locale;
   factorCopy: FactorCopy;
   chartCopy: ChartCopy;
+  theme: DashboardTheme;
 };
 
 export function FactorSubcharts({
@@ -52,6 +54,7 @@ export function FactorSubcharts({
   locale,
   factorCopy,
   chartCopy,
+  theme,
 }: Props) {
   if (!diagnostics || diagnostics.factor_series.length === 0) {
     return null;
@@ -62,15 +65,27 @@ export function FactorSubcharts({
   );
 
   return (
-    <section className="mt-6 border-t border-white/8 pt-5">
+    <section
+      className="mt-6 border-t pt-5"
+      style={{ borderColor: "var(--theme-panel-border)" }}
+      data-theme={theme.id}
+    >
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
-          <p className="text-[0.72rem] uppercase tracking-[0.24em] text-white/34">
+          <p
+            className="text-[0.72rem] uppercase tracking-[0.24em]"
+            style={{ color: "var(--theme-copy-faint)" }}
+          >
             {chartCopy.factorSubcharts}
           </p>
-          <p className="mt-1 text-sm text-white/46">{chartCopy.factorFixedDaily}</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--theme-copy-soft)" }}>
+            {chartCopy.factorFixedDaily}
+          </p>
         </div>
-        <ActivitySquare className="h-4.5 w-4.5 text-white/42" />
+        <ActivitySquare
+          className="h-4.5 w-4.5"
+          style={{ color: "var(--theme-accent)" }}
+        />
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -87,6 +102,7 @@ export function FactorSubcharts({
               reading={reading}
               locale={locale}
               factorCopy={factorCopy}
+              theme={theme}
             />
           );
         })}
@@ -100,11 +116,13 @@ function MiniFactorCard({
   reading,
   locale,
   factorCopy,
+  theme,
 }: {
   series: NonNullable<ReplayResponse["diagnostics"]>["factor_series"][number];
   reading: NonNullable<ReplayResponse["diagnostics"]>["factors"][number];
   locale: Locale;
   factorCopy: FactorCopy;
+  theme: DashboardTheme;
 }) {
   const status = reading.long_signal
     ? "bullish"
@@ -113,48 +131,63 @@ function MiniFactorCard({
       : "neutral";
   const lineColor =
     status === "bullish"
-      ? "#9ed8bf"
+      ? theme.vars["--theme-positive"]
       : status === "defensive"
-        ? "#f0a987"
-        : "#8aa9ff";
+        ? theme.vars["--theme-negative"]
+        : theme.vars["--theme-accent"];
   const areaColor =
+    `color-mix(in srgb, ${lineColor} 16%, transparent)`;
+  const statusColor =
     status === "bullish"
-      ? "rgba(158,216,191,0.12)"
+      ? "var(--theme-positive)"
       : status === "defensive"
-        ? "rgba(240,169,135,0.12)"
-        : "rgba(138,169,255,0.12)";
+        ? "var(--theme-negative)"
+        : "var(--theme-neutral)";
 
   return (
-    <article className="rounded-[1.2rem] border border-white/8 bg-white/[0.02] px-4 py-4">
+    <article
+      className="rounded-[1.2rem] border px-4 py-4"
+      style={{
+        borderColor: "var(--theme-panel-border)",
+        background: "var(--theme-panel-muted)",
+      }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-[0.95rem] font-semibold text-[#f7efe5]">
+          <p
+            className="truncate text-[0.95rem] font-semibold"
+            style={{ color: "var(--theme-copy-strong)" }}
+          >
             {factorCopy.factorNames[series.factor_id]}
           </p>
-          <p className="mt-1 text-[0.78rem] text-white/42">
+          <p className="mt-1 text-[0.78rem]" style={{ color: "var(--theme-copy-soft)" }}>
             {factorCopy.sources[series.factor_id][series.source_mode]} ·{" "}
             {sourceModeLabel(factorCopy, series.source_mode)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[0.92rem] font-semibold tabular-nums text-[#f8f2e8]">
+          <p
+            className="text-[0.92rem] font-semibold tabular-nums"
+            style={{ color: "var(--theme-title)" }}
+          >
             {formatFactorValue(reading, locale, factorCopy)}
           </p>
           <p
-            className={`mt-1 text-[0.72rem] uppercase tracking-[0.18em] ${
-              status === "bullish"
-                ? "text-[#9ed8bf]"
-                : status === "defensive"
-                  ? "text-[#f0a987]"
-                  : "text-white/36"
-            }`}
+            className="mt-1 text-[0.72rem] uppercase tracking-[0.18em]"
+            style={{ color: statusColor }}
           >
             {statusLabel(series.factor_id, reading.value, status, factorCopy)}
           </p>
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[0.9rem] border border-white/6 bg-[#0d0e10]">
+      <div
+        className="mt-4 overflow-hidden rounded-[0.9rem] border"
+        style={{
+          borderColor: "var(--theme-panel-border)",
+          background: "var(--theme-panel-strong)",
+        }}
+      >
         <MiniSparkline
           points={series.points}
           lineColor={lineColor}
@@ -237,7 +270,7 @@ function MiniSparkline({
             y1={padding}
             x2={x}
             y2={height - padding}
-            stroke="rgba(255,255,255,0.06)"
+            stroke="var(--theme-panel-border)"
             strokeWidth="1"
             strokeDasharray="2 3"
           />
@@ -248,7 +281,7 @@ function MiniSparkline({
         y1={height - padding}
         x2={width - padding}
         y2={height - padding}
-        stroke="rgba(255,255,255,0.07)"
+        stroke="var(--theme-panel-border)"
         strokeWidth="1"
       />
       <path d={areaPath} fill={areaColor} />
@@ -285,7 +318,10 @@ function MiniTimeline({
   }
 
   return (
-    <div className="mt-2 grid grid-cols-3 text-[0.68rem] tabular-nums text-white/30">
+    <div
+      className="mt-2 grid grid-cols-3 text-[0.68rem] tabular-nums"
+      style={{ color: "var(--theme-copy-faint)" }}
+    >
       <span>{formatDate(start, locale)}</span>
       <span className="text-center">{formatDate(middle, locale)}</span>
       <span className="text-right">{formatDate(end, locale)}</span>

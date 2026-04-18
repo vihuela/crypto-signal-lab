@@ -2,6 +2,7 @@
 
 import { measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { DashboardTheme } from "@/features/dashboard/themes/types";
 
 const WALK_LOOP_MS = 4_600;
 const WALK_RESET_PAUSE_MS = 560;
@@ -9,6 +10,7 @@ const SPACE_FALLBACK_RATIO = 0.28;
 
 type HeroMarioTitleProps = {
   title: string;
+  theme: DashboardTheme;
 };
 
 type LayoutState = {
@@ -38,7 +40,7 @@ const graphemeSegmenter =
     ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
     : null;
 
-export function HeroMarioTitle({ title }: HeroMarioTitleProps) {
+export function HeroMarioTitle({ title, theme }: HeroMarioTitleProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const graphemes = useMemo(() => splitGraphemes(title), [title]);
   const walkableIndices = useMemo(
@@ -229,14 +231,25 @@ export function HeroMarioTitle({ title }: HeroMarioTitleProps) {
 
   return (
     <>
-      <span className="display-face block max-w-[8ch] text-[clamp(2.35rem,12.6vw,4.05rem)] font-semibold leading-[0.9] tracking-[-0.06em] text-[#f8f2e8] md:hidden">
+      <span
+        className="display-face block max-w-[8ch] text-[clamp(2.35rem,12.6vw,4.05rem)] font-semibold leading-[0.9] tracking-[-0.06em] md:hidden"
+        style={{
+          color: "var(--theme-title)",
+          filter: "drop-shadow(0 0 20px var(--theme-focus))",
+        }}
+        data-theme={theme.id}
+      >
         {title}
       </span>
 
       <div
         ref={titleRef}
         aria-label={title}
-        className="relative hidden whitespace-pre md:inline-flex md:items-end md:text-[clamp(3.65rem,6.9vw,6.45rem)] md:font-semibold md:leading-[0.89] md:tracking-[-0.074em] md:text-[#f8f2e8]"
+        className="relative hidden whitespace-pre md:inline-flex md:items-end md:text-[clamp(3.65rem,6.9vw,6.45rem)] md:font-semibold md:leading-[0.89] md:tracking-[-0.074em]"
+        style={{
+          color: "var(--theme-title)",
+          filter: "drop-shadow(0 0 24px var(--theme-focus))",
+        }}
       >
         {graphemes.map((grapheme, index) => {
           const width = layout?.widths[index];
