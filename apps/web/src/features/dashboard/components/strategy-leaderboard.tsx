@@ -9,6 +9,7 @@ import {
   formatPercent,
   formatPlainNumber,
 } from "@/features/dashboard/formatters";
+import { HudFrame } from "@/features/dashboard/components/hud-frame";
 import type { DashboardTheme } from "@/features/dashboard/themes/types";
 import type { Locale } from "@/features/i18n/dictionaries";
 
@@ -63,24 +64,22 @@ export function StrategyLeaderboard({
   const leader = entries[0];
 
   return (
-    <section
-      className="rounded-[2rem] border px-6 py-6"
+    <HudFrame
+      className="cyber-clip border px-6 py-6"
       style={{
         borderColor: "var(--theme-panel-border)",
         background: "var(--theme-panel)",
         boxShadow: "var(--theme-shadow-strong)",
       }}
-      data-theme={theme.id}
     >
-      <div className="max-w-4xl">
+      <div data-theme={theme.id} className="max-w-4xl">
         <p
-          className="text-[0.7rem] uppercase tracking-[0.26em]"
-          style={{ color: "var(--theme-copy-faint)" }}
+          className="font-mono-data text-[0.66rem] uppercase tracking-[0.26em] neon-text-magenta"
         >
-          {sectionLabel}
+          {`// ${sectionLabel}`}
         </p>
         <h2
-          className="mt-2 text-2xl font-semibold"
+          className="mt-2 text-2xl font-semibold neon-text"
           style={{ color: "var(--theme-title)" }}
         >
           {title}
@@ -90,7 +89,7 @@ export function StrategyLeaderboard({
           style={{ color: "var(--theme-copy-soft)" }}
         >
           <span
-            className="rounded-full border px-3 py-1"
+            className="font-mono-data uppercase tracking-[0.14em] cyber-clip border px-3 py-1"
             style={{
               borderColor: "var(--theme-chip-border)",
               background: "var(--theme-chip)",
@@ -122,11 +121,10 @@ export function StrategyLeaderboard({
           ) : null}
           {buyHoldReturn ? (
             <span
-              className="rounded-full border px-3 py-1"
+              className="font-mono-data uppercase tracking-[0.14em] cyber-clip border px-3 py-1 neon-text-magenta"
               style={{
                 borderColor: "var(--theme-chip-active-border)",
                 background: "var(--theme-chip-active)",
-                color: "var(--theme-copy-strong)",
               }}
             >
               {copy.buyHold} {buyHoldReturn}
@@ -143,69 +141,68 @@ export function StrategyLeaderboard({
 
       {isLoading && entries.length === 0 ? (
         <div
-          className="mt-6 rounded-[1.6rem] border px-5 py-10 text-center"
+          className="mt-6 cyber-clip border px-5 py-10 text-center font-mono-data uppercase tracking-[0.14em]"
           style={{
             borderColor: "var(--theme-panel-border)",
             background: "var(--theme-panel-muted)",
             color: "var(--theme-copy)",
           }}
         >
-          {copy.empty}
+          {`// ${copy.empty}`}
         </div>
       ) : null}
 
       {error ? (
         <div
-          className="mt-6 rounded-[1.5rem] border px-4 py-4 text-sm"
+          className="mt-6 cyber-clip border px-4 py-4 text-sm font-mono-data"
           style={{
             background: "color-mix(in srgb, var(--theme-negative) 14%, var(--theme-panel))",
-            borderColor: "color-mix(in srgb, var(--theme-negative) 32%, transparent)",
+            borderColor: "color-mix(in srgb, var(--theme-negative) 50%, transparent)",
             color: "var(--theme-copy-strong)",
           }}
         >
-          {error}
+          {`!! ${error}`}
         </div>
       ) : null}
 
       {leader ? (
         <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(260px,0.75fr)_minmax(0,1.25fr)]">
-          <article
-            className="rounded-[1.8rem] border px-5 py-5"
+          <HudFrame
+            accent="cyan"
+            className="cyber-clip border px-5 py-5"
             style={{
               borderColor: "var(--theme-panel-border-strong)",
               background: "var(--theme-panel-elevated)",
             }}
           >
             <p
-              className="text-[0.68rem] uppercase tracking-[0.24em]"
-              style={{ color: "var(--theme-copy-faint)" }}
+              className="font-mono-data text-[0.66rem] uppercase tracking-[0.24em] neon-text-cyan"
             >
-              {copy.currentLeader}
+              {`// ${copy.currentLeader}`}
             </p>
             <div className="mt-4 flex items-start justify-between gap-4">
               <div>
                 <p
-                  className="text-xl font-semibold"
+                  className="text-xl font-semibold neon-text"
                   style={{ color: "var(--theme-title)" }}
                 >
                   {leader.strategy_label}
                 </p>
                 <p
-                  className="mt-1 text-sm"
+                  className="mt-1 font-mono-data text-[0.82rem] uppercase tracking-[0.14em]"
                   style={{ color: "var(--theme-copy-soft)" }}
                 >
                   {leader.strategy_style}
                 </p>
               </div>
               <span
-                className="rounded-full border px-3 py-1 text-[0.72rem] uppercase tracking-[0.18em]"
+                className="cyber-clip border px-3 py-1 font-mono-data text-[0.74rem] uppercase tracking-[0.2em] neon-text-magenta"
                 style={{
                   borderColor: "var(--theme-chip-active-border)",
                   background: "var(--theme-chip-active)",
-                  color: "var(--theme-copy-strong)",
                 }}
               >
-                #1
+                ##01
               </span>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3">
@@ -233,7 +230,7 @@ export function StrategyLeaderboard({
                 theme={theme}
               />
             </div>
-          </article>
+          </HudFrame>
 
           <div className="grid gap-3">
             {entries.map((entry, index) => {
@@ -244,13 +241,15 @@ export function StrategyLeaderboard({
                   key={entry.strategy_id}
                   type="button"
                   onClick={() => onSelectStrategy(entry.strategy_id as StrategyId)}
-                  className="group grid gap-4 rounded-[1.45rem] border px-4 py-4 text-left transition duration-200 ease-out hover:-translate-y-[1px]"
+                  className="group grid gap-4 cyber-clip border px-4 py-4 text-left transition duration-200 ease-out hover:-translate-y-[1px]"
                   style={
                     isSelected
                       ? {
                           borderColor: "var(--theme-control-active-border)",
                           background: "var(--theme-control-active)",
                           boxShadow: "var(--theme-shadow)",
+                          borderLeftWidth: "3px",
+                          borderLeftColor: "var(--theme-accent-2)",
                         }
                       : {
                           borderColor: "var(--theme-panel-border)",
@@ -261,11 +260,18 @@ export function StrategyLeaderboard({
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <div className="flex items-start gap-4">
                       <span
-                        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border text-sm font-semibold"
+                        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center cyber-clip border font-mono-data text-sm font-semibold tabular-nums"
                         style={{
-                          borderColor: "var(--theme-panel-border)",
+                          borderColor: isSelected
+                            ? "var(--theme-accent-2)"
+                            : "var(--theme-panel-border)",
                           background: "var(--theme-panel-strong)",
-                          color: "var(--theme-copy-strong)",
+                          color: isSelected
+                            ? "var(--theme-accent-2)"
+                            : "var(--theme-copy-strong)",
+                          textShadow: isSelected
+                            ? "0 0 8px rgba(0,240,255,0.6)"
+                            : "none",
                         }}
                       >
                         {String(index + 1).padStart(2, "0")}
@@ -280,14 +286,13 @@ export function StrategyLeaderboard({
                           </p>
                           {isSelected ? (
                             <span
-                              className="rounded-full border px-2.5 py-1 text-[0.68rem] uppercase tracking-[0.18em]"
+                              className="cyber-clip border px-2.5 py-1 font-mono-data text-[0.66rem] uppercase tracking-[0.18em] neon-text-cyan"
                               style={{
                                 borderColor: "var(--theme-chip-active-border)",
                                 background: "var(--theme-chip-active)",
-                                color: "var(--theme-copy-strong)",
                               }}
                             >
-                              {copy.selected}
+                              {`[ ${copy.selected} ]`}
                             </span>
                           ) : null}
                         </div>
@@ -365,7 +370,7 @@ export function StrategyLeaderboard({
           </div>
         </div>
       ) : null}
-    </section>
+    </HudFrame>
   );
 }
 
@@ -380,17 +385,23 @@ function MetricTile({
 }) {
   return (
     <div
-      className="rounded-[1.1rem] px-3 py-3"
-      style={{ background: "var(--theme-panel-strong)" }}
+      className="cyber-clip border px-3 py-3"
+      style={{
+        background: "var(--theme-panel-strong)",
+        borderColor: "var(--theme-panel-border)",
+        borderLeft: "2px solid var(--theme-accent)",
+      }}
       data-theme={theme.id}
     >
       <p
-        className="text-[0.68rem] uppercase tracking-[0.22em]"
-        style={{ color: "var(--theme-copy-faint)" }}
+        className="font-mono-data text-[0.62rem] uppercase tracking-[0.22em] neon-text-magenta"
       >
-        {label}
+        {`> ${label}`}
       </p>
-      <p className="mt-2 text-lg font-semibold" style={{ color: "var(--theme-title)" }}>
+      <p
+        className="mt-2 font-mono-data text-lg font-semibold tabular-nums"
+        style={{ color: "var(--theme-title)" }}
+      >
         {value}
       </p>
     </div>
@@ -410,23 +421,32 @@ function ScorePill({
 }) {
   return (
     <div
-      className="rounded-[1rem] px-3 py-2.5"
-      style={{ background: "var(--theme-panel-strong)" }}
+      className="cyber-clip px-3 py-2.5"
+      style={{
+        background: "var(--theme-panel-strong)",
+        borderLeft: tone === "positive"
+          ? "2px solid var(--theme-positive)"
+          : "2px solid var(--theme-panel-border)",
+      }}
       data-theme={theme.id}
     >
       <p
-        className="text-[0.66rem] uppercase tracking-[0.2em]"
+        className="font-mono-data text-[0.62rem] uppercase tracking-[0.2em]"
         style={{ color: "var(--theme-copy-faint)" }}
       >
         {label}
       </p>
       <p
-        className="mt-1 text-sm font-semibold"
+        className="mt-1 font-mono-data text-sm font-semibold tabular-nums"
         style={{
           color:
             tone === "positive"
               ? "var(--theme-positive)"
               : "var(--theme-copy-strong)",
+          textShadow:
+            tone === "positive"
+              ? "0 0 8px rgba(57,255,20,0.45)"
+              : "none",
         }}
       >
         {value}

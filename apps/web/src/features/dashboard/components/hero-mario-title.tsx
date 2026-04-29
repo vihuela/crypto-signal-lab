@@ -232,10 +232,10 @@ export function HeroMarioTitle({ title, theme }: HeroMarioTitleProps) {
   return (
     <>
       <span
-        className="display-face block max-w-[8ch] text-[clamp(2.35rem,12.6vw,4.05rem)] font-semibold leading-[0.9] tracking-[-0.06em] md:hidden"
+        className="chromatic-title display-face block max-w-[8ch] text-[clamp(2.35rem,12.6vw,4.05rem)] font-semibold leading-[0.9] tracking-[-0.06em] md:hidden"
         style={{
           color: "var(--theme-title)",
-          filter: "drop-shadow(0 0 20px var(--theme-focus))",
+          filter: "drop-shadow(0 0 24px var(--theme-focus))",
         }}
         data-theme={theme.id}
       >
@@ -245,10 +245,10 @@ export function HeroMarioTitle({ title, theme }: HeroMarioTitleProps) {
       <div
         ref={titleRef}
         aria-label={title}
-        className="relative hidden whitespace-pre md:inline-flex md:items-end md:text-[clamp(3.65rem,6.9vw,6.45rem)] md:font-semibold md:leading-[0.89] md:tracking-[-0.074em]"
+        className="chromatic-title relative hidden whitespace-pre md:inline-flex md:items-end md:text-[clamp(3.65rem,6.9vw,6.45rem)] md:font-semibold md:leading-[0.89] md:tracking-[-0.074em]"
         style={{
           color: "var(--theme-title)",
-          filter: "drop-shadow(0 0 24px var(--theme-focus))",
+          filter: "drop-shadow(0 0 28px var(--theme-focus))",
         }}
       >
         {graphemes.map((grapheme, index) => {

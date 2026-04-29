@@ -16,41 +16,51 @@ export function LanguageToggle({
 }: LanguageToggleProps) {
   return (
     <div
-      className="p-1 text-sm"
+      className="p-1 text-sm font-mono-data"
       style={{ color: "var(--theme-copy)" }}
       data-theme={theme.id}
     >
       <div
-        className="mb-1 px-2 pt-1 text-[0.64rem] uppercase tracking-[0.24em]"
-        style={{ color: "var(--theme-copy-faint)" }}
+        className="mb-1 px-2 pt-1 text-[0.6rem] uppercase tracking-[0.24em] neon-text-cyan"
       >
-        {label}
+        {`> ${label}`}
       </div>
-      <div className="flex gap-1">
-        {(["zh", "en"] as const).map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onChange(item)}
-            className="rounded-full border px-3 py-1.5 transition duration-200 ease-out"
-            style={
-              locale === item
-                ? {
-                    background: "var(--theme-chip-active)",
-                    borderColor: "var(--theme-chip-active-border)",
-                    color: "var(--theme-copy-strong)",
-                    boxShadow: "var(--theme-shadow)",
-                  }
-                : {
-                    background: "var(--theme-chip)",
-                    borderColor: "var(--theme-chip-border)",
-                    color: "var(--theme-copy)",
-                  }
-            }
-          >
-            {item.toUpperCase()}
-          </button>
-        ))}
+      <div
+        className="flex gap-0 cyber-clip border"
+        style={{
+          borderColor: "var(--theme-control-border)",
+          background: "var(--theme-control)",
+        }}
+      >
+        {(["zh", "en"] as const).map((item, idx) => {
+          const isActive = locale === item;
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => onChange(item)}
+              className="px-3.5 py-1.5 transition-colors duration-150 ease-out"
+              style={{
+                color: isActive
+                  ? "var(--theme-accent)"
+                  : "var(--theme-copy)",
+                background: isActive
+                  ? "color-mix(in srgb, var(--theme-accent) 14%, transparent)"
+                  : "transparent",
+                textShadow: isActive
+                  ? "0 0 8px rgba(255,43,214,0.7)"
+                  : "none",
+                borderLeft:
+                  idx === 0
+                    ? "none"
+                    : "1px solid var(--theme-control-border)",
+                fontWeight: isActive ? 600 : 400,
+              }}
+            >
+              {item.toUpperCase()}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

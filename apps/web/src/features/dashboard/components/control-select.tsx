@@ -24,7 +24,7 @@ export function ControlSelect({
 }: ControlSelectProps) {
   return (
     <label
-      className="rounded-[1.4rem] border px-4 py-3 text-sm backdrop-blur-sm"
+      className="cyber-clip border px-4 py-3 text-sm backdrop-blur-sm transition-colors duration-150 ease-out hover:border-[color:var(--theme-control-active-border)]"
       style={{
         borderColor: "var(--theme-control-border)",
         background: "var(--theme-control)",
@@ -34,16 +34,22 @@ export function ControlSelect({
       data-theme={theme.id}
     >
       <span
-        className="mb-2 block text-[0.68rem] uppercase tracking-[0.24em]"
-        style={{ color: "var(--theme-copy-faint)" }}
+        className="mb-2 block font-mono-data text-[0.62rem] uppercase tracking-[0.22em] neon-text-cyan"
       >
-        {label}
+        {`> ${label}`}
       </span>
-      <div className="relative">
+      <div className="relative flex items-center">
+        <span
+          aria-hidden
+          className="font-mono-data text-[0.95rem] mr-1.5 select-none"
+          style={{ color: "var(--theme-accent)" }}
+        >
+          ▸
+        </span>
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full appearance-none bg-transparent pr-8 font-medium tracking-[0.03em] outline-none"
+          className="font-mono-data w-full appearance-none bg-transparent pr-8 font-medium tracking-[0.04em] outline-none"
           style={{ color: "var(--theme-copy-strong)" }}
         >
           {options.map((option) => (
@@ -62,7 +68,10 @@ export function ControlSelect({
         </select>
         <ChevronDown
           className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2"
-          style={{ color: "var(--theme-copy-faint)" }}
+          style={{
+            color: "var(--theme-accent-2)",
+            filter: "drop-shadow(0 0 4px rgba(0,240,255,0.7))",
+          }}
         />
       </div>
     </label>

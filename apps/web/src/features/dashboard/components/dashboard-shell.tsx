@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Bot, Radar, Waves } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Activity, Cpu, Zap } from "lucide-react";
 
 import {
   fetchReplay,
@@ -18,6 +18,7 @@ import {
 import { ControlSelect } from "@/features/dashboard/components/control-select";
 import { CryptoLogoLottie } from "@/features/dashboard/components/crypto-logo-lottie";
 import { HeroMarioTitle } from "@/features/dashboard/components/hero-mario-title";
+import { HudFrame } from "@/features/dashboard/components/hud-frame";
 import { LanguageToggle } from "@/features/dashboard/components/language-toggle";
 import { MarketStageChart } from "@/features/dashboard/components/market-stage-chart";
 import { SignalFactorsPanel } from "@/features/dashboard/components/signal-factors-panel";
@@ -446,24 +447,31 @@ export function DashboardShell() {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none fixed inset-0"
         style={{
-          backgroundImage: "var(--theme-page-radial), var(--theme-page-grid)",
-          backgroundSize: "cover, 36px 36px",
-          backgroundPosition: "center, center",
-          opacity: 1,
-          mixBlendMode: "screen",
+          backgroundImage: "var(--theme-page-radial)",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
         }}
       />
       <div className="relative mx-auto flex w-full max-w-[1440px] flex-col gap-8 xl:gap-10">
+        <SystemStatusBar
+          isRefreshing={isRefreshing}
+          lastUpdatedLabel={lastUpdatedLabel}
+          symbol={symbol}
+          source={source}
+          timeframe={timeframe}
+        />
+
         <header className="flex flex-col gap-6">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex max-w-5xl flex-col gap-3 md:flex-row md:items-center md:gap-5 xl:max-w-[72rem]">
               <div className="max-w-3xl xl:max-w-4xl">
                 <div
-                  className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.72rem] uppercase tracking-[0.24em]"
+                  className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono-data text-[0.72rem] uppercase tracking-[0.18em]"
                   style={{ color: "var(--theme-hero-kicker)" }}
                 >
+                  <span className="neon-text-magenta">[</span>
                   <span
                     className={
                       isZh ? "cjk-copy text-[0.82rem] tracking-[0.12em]" : ""
@@ -471,22 +479,23 @@ export function DashboardShell() {
                   >
                     {marketCopy.nav.researchTerminal}
                   </span>
+                  <span className="neon-text-magenta">]</span>
                   <span
                     aria-hidden
-                    className="h-px w-6"
-                    style={{ background: "var(--theme-panel-border-strong)" }}
+                    className="h-px w-4"
+                    style={{ background: "var(--theme-accent)" }}
                   />
                   <span
-                    className={
+                    className={`neon-text-cyan ${
                       isZh ? "cjk-copy text-[0.82rem] tracking-[0.12em]" : ""
-                    }
+                    }`.trim()}
                   >
                     {marketCopy.nav.spotOnly}
                   </span>
                   <span
                     aria-hidden
-                    className="h-px w-6"
-                    style={{ background: "var(--theme-panel-border-strong)" }}
+                    className="h-px w-4"
+                    style={{ background: "var(--theme-accent-2)" }}
                   />
                   <span
                     className={
@@ -496,16 +505,16 @@ export function DashboardShell() {
                     {marketCopy.nav.timeframes}
                   </span>
                 </div>
-                <div
-                  className="mt-1 max-w-4xl rounded-[1.9rem] border px-4 py-4 md:px-6 md:py-4"
+                <HudFrame
+                  className="mt-1 max-w-4xl px-4 py-4 md:px-6 md:py-4 cyber-clip scan-strip"
                   style={{
-                    borderColor: "var(--theme-panel-border-strong)",
+                    border: "1px solid var(--theme-panel-border-strong)",
                     backgroundImage: "var(--theme-hero-glow)",
                     boxShadow: "var(--theme-shadow-strong)",
                   }}
                 >
                   <HeroMarioTitle title={marketCopy.hero.title} theme={theme} />
-                </div>
+                </HudFrame>
               </div>
               <div className="md:pt-8 xl:pt-10">
                 <CryptoLogoLottie locale={locale} theme={theme} compact />
@@ -523,12 +532,14 @@ export function DashboardShell() {
           </div>
 
           <div className="border-t pt-5" style={{ borderColor: "var(--theme-panel-border)" }}>
-            <div
-              className="grid gap-4 rounded-[1.75rem] border p-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(760px,1.05fr)] lg:items-start"
+            <HudFrame
+              className="grid gap-4 cyber-clip border p-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(760px,1.05fr)] lg:items-start"
               style={panelStyle}
             >
               <div>
-                <p className="text-[0.68rem] uppercase tracking-[0.26em]" style={kickerStyle}>
+                <p
+                  className="font-mono-data text-[0.68rem] uppercase tracking-[0.22em] neon-text-magenta"
+                >
                   {theme.kicker}
                 </p>
                 <p
@@ -542,65 +553,54 @@ export function DashboardShell() {
                 >
                   {marketCopy.hero.description}
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2 text-[0.7rem] uppercase tracking-[0.2em]">
-                  <span
-                    className="rounded-full border px-3 py-1.5"
-                    style={{
-                      borderColor: "var(--theme-chip-active-border)",
-                      background: "var(--theme-chip-active)",
-                      color: "var(--theme-copy-strong)",
-                    }}
-                  >
-                    {marketCopy.cards.localOnly}
-                  </span>
-                  <span
-                    className="rounded-full border px-3 py-1.5"
-                    style={{
-                      borderColor: "var(--theme-chip-border)",
-                      background: "var(--theme-chip)",
-                      color: "var(--theme-copy)",
-                    }}
-                  >
-                    {marketCopy.stats.autoRefresh}
-                  </span>
-                  <span
-                    className="rounded-full border px-3 py-1.5"
-                    style={{
-                      borderColor: "var(--theme-chip-border)",
-                      background: "var(--theme-chip)",
-                      color: "var(--theme-copy)",
-                    }}
-                  >
-                    BTC · ETH · SOL · DOGE
-                  </span>
+                <div className="mt-4 flex flex-wrap gap-2 font-mono-data text-[0.7rem] uppercase tracking-[0.16em]">
+                  <CyberTag tone="active">{marketCopy.cards.localOnly}</CyberTag>
+                  <CyberTag>{marketCopy.stats.autoRefresh}</CyberTag>
+                  <CyberTag>BTC · ETH · SOL · DOGE</CyberTag>
                 </div>
               </div>
 
               <div className="grid w-full gap-2 lg:translate-x-4 lg:grid-cols-4 lg:self-stretch">
-                {replayMetrics.map((card) => (
+                {replayMetrics.map((card, idx) => (
                   <article
                     key={card.label}
-                    className="rounded-[1.05rem] px-3 py-3"
+                    className="cyber-clip px-3 py-3"
                     style={{
                       background:
                         card.tone === "primary"
                           ? "color-mix(in srgb, var(--theme-panel-strong) 76%, transparent)"
                           : "color-mix(in srgb, var(--theme-panel) 88%, transparent)",
+                      borderLeft: `2px solid ${
+                        idx % 2 === 0
+                          ? "var(--theme-accent)"
+                          : "var(--theme-accent-2)"
+                      }`,
                     }}
                   >
                     <p
-                      className="text-[0.66rem] uppercase tracking-[0.24em]"
-                      style={kickerStyle}
+                      className="font-mono-data text-[0.62rem] uppercase tracking-[0.22em]"
+                      style={{
+                        color:
+                          idx % 2 === 0
+                            ? "var(--theme-accent)"
+                            : "var(--theme-accent-2)",
+                      }}
                     >
-                      {card.label}
+                      {`> ${card.label}`}
                     </p>
                     <p
-                      className={`mt-2 font-semibold leading-none ${
+                      className={`mt-2 font-mono-data font-semibold leading-none ${
                         card.tone === "primary"
-                          ? "text-[1.5rem] tracking-[-0.03em]"
-                          : "text-[1.25rem] tracking-[-0.02em]"
-                      }`}
-                      style={titleStyle}
+                          ? "text-[1.55rem] tracking-[-0.02em]"
+                          : "text-[1.25rem] tracking-[-0.01em]"
+                      } ${
+                        card.tone === "primary"
+                          ? idx % 2 === 0
+                            ? "neon-text-magenta"
+                            : "neon-text-cyan"
+                          : ""
+                      }`.trim()}
+                      style={card.tone === "primary" ? undefined : titleStyle}
                     >
                       {card.value}
                     </p>
@@ -618,14 +618,15 @@ export function DashboardShell() {
                   </article>
                 ))}
               </div>
-            </div>
+            </HudFrame>
           </div>
 
         </header>
 
         <section className="sticky top-4 z-50">
-          <div
-            className="rounded-2xl border px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(13,14,17,0.7)] md:px-5"
+          <HudFrame
+            accent="cyan"
+            className="cyber-clip border px-4 py-3 backdrop-blur-xl supports-[backdrop-filter]:bg-[rgba(8,2,18,0.7)] md:px-5"
             style={stickyPanelStyle}
           >
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -658,7 +659,7 @@ export function DashboardShell() {
                 theme={theme}
               />
               <div
-                className="flex flex-col justify-center rounded-xl border px-4 py-2 text-sm"
+                className="flex flex-col justify-center cyber-clip border px-4 py-2 text-sm"
                 style={{
                   borderColor: "var(--theme-control-border)",
                   background: "var(--theme-control)",
@@ -666,15 +667,20 @@ export function DashboardShell() {
                   boxShadow: "var(--theme-shadow)",
                 }}
               >
-                <span className="mb-1 block text-[0.66rem] uppercase tracking-[0.26em]" style={kickerStyle}>
-                  API
+                <span
+                  className="mb-1 block font-mono-data text-[0.62rem] uppercase tracking-[0.24em] neon-text-cyan"
+                >
+                  &gt; UPLINK
                 </span>
-                <p className="font-medium tracking-[0.02em]" style={titleStyle}>
-                  FastAPI orchestration
+                <p
+                  className="font-mono-data font-medium tracking-[0.02em] term-cursor"
+                  style={titleStyle}
+                >
+                  FastAPI · ONLINE
                 </p>
               </div>
             </div>
-          </div>
+          </HudFrame>
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_380px]">
@@ -720,19 +726,30 @@ export function DashboardShell() {
               theme={theme}
             />
 
-            <section className="rounded-2xl border px-6 py-6" style={panelStyle}>
+            <HudFrame className="cyber-clip border px-6 py-6" style={panelStyle}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.28em]" style={kickerStyle}>
-                    {marketCopy.sections.sessionBias}
+                  <p
+                    className="font-mono-data text-[0.66rem] uppercase tracking-[0.26em] neon-text-magenta"
+                  >
+                    {`// ${marketCopy.sections.sessionBias}`}
                   </p>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.015em]" style={titleStyle}>
+                  <h2
+                    className="mt-3 text-2xl font-semibold tracking-[-0.015em] neon-text"
+                    style={titleStyle}
+                  >
                     {replay
                       ? marketCopy.bias[replay.stats.strategy_bias]
                       : marketCopy.cards.loading}
                   </h2>
                 </div>
-                <Radar className="mt-1 h-5 w-5" style={{ color: "var(--theme-accent)" }} />
+                <Activity
+                  className="mt-1 h-5 w-5"
+                  style={{
+                    color: "var(--theme-accent)",
+                    filter: "drop-shadow(0 0 8px rgba(255,43,214,0.7))",
+                  }}
+                />
               </div>
 
               <p className="mt-4 text-[0.95rem] leading-[1.7]" style={bodyStyle}>
@@ -786,24 +803,41 @@ export function DashboardShell() {
                       color: "var(--theme-copy-strong)",
                     }}
                   >
-                    <p className="font-semibold">{marketCopy.cards.error}</p>
+                    <p className="font-mono-data font-semibold neon-text-magenta">
+                      {`!! ${marketCopy.cards.error}`}
+                    </p>
                     <p className="mt-1">{error}</p>
                   </div>
                 ) : null}
               </div>
-            </section>
+            </HudFrame>
 
-            <section className="rounded-2xl border px-6 py-6" style={panelStyle}>
+            <HudFrame
+              accent="cyan"
+              className="cyber-clip border px-6 py-6"
+              style={panelStyle}
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.28em]" style={kickerStyle}>
-                    {marketCopy.sections.watchStack}
+                  <p
+                    className="font-mono-data text-[0.66rem] uppercase tracking-[0.26em] neon-text-cyan"
+                  >
+                    {`// ${marketCopy.sections.watchStack}`}
                   </p>
-                  <h2 className="mt-3 text-xl font-semibold tracking-[-0.015em]" style={titleStyle}>
+                  <h2
+                    className="mt-3 text-xl font-semibold tracking-[-0.015em]"
+                    style={titleStyle}
+                  >
                     {marketCopy.watch.currentFocus}
                   </h2>
                 </div>
-                <Waves className="h-5 w-5" style={{ color: "var(--theme-accent-2)" }} />
+                <Zap
+                  className="h-5 w-5"
+                  style={{
+                    color: "var(--theme-accent-2)",
+                    filter: "drop-shadow(0 0 8px rgba(0,240,255,0.7))",
+                  }}
+                />
               </div>
               <p className="mt-3 text-[0.9rem] leading-[1.6]" style={bodyStyle}>
                 {marketCopy.watch.currentFocusSubtitle}
@@ -814,26 +848,52 @@ export function DashboardShell() {
                     key={asset.symbol}
                     className="flex items-center justify-between py-3.5"
                   >
-                    <div>
-                      <p className="text-[0.98rem] font-semibold" style={titleStyle}>
-                        {marketCopy.assets[asset.symbol as keyof typeof marketCopy.assets]}
-                      </p>
-                      <p className="text-[0.8rem]" style={mutedStyle}>
-                        {marketCopy.sources[asset.source_id]} ·{" "}
-                        {marketCopy.bias[asset.strategy_bias]}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="inline-block h-6 w-[3px]"
+                        style={{
+                          background:
+                            asset.change_pct >= 0
+                              ? "var(--theme-positive)"
+                              : "var(--theme-negative)",
+                          boxShadow:
+                            asset.change_pct >= 0
+                              ? "0 0 10px rgba(57,255,20,0.7)"
+                              : "0 0 10px rgba(255,59,107,0.7)",
+                        }}
+                      />
+                      <div>
+                        <p className="text-[0.98rem] font-semibold" style={titleStyle}>
+                          {marketCopy.assets[asset.symbol as keyof typeof marketCopy.assets]}
+                        </p>
+                        <p
+                          className="font-mono-data text-[0.78rem] uppercase tracking-[0.14em]"
+                          style={mutedStyle}
+                        >
+                          {marketCopy.sources[asset.source_id]} ·{" "}
+                          {marketCopy.bias[asset.strategy_bias]}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[0.98rem] font-semibold tabular-nums" style={titleStyle}>
+                      <p
+                        className="font-mono-data text-[0.98rem] font-semibold tabular-nums"
+                        style={titleStyle}
+                      >
                         {formatUsd(asset.last_close, locale)}
                       </p>
                       <p
-                        className="text-[0.82rem] tabular-nums"
+                        className="font-mono-data text-[0.82rem] tabular-nums"
                         style={{
                           color:
                             asset.change_pct >= 0
                               ? "var(--theme-positive)"
                               : "var(--theme-negative)",
+                          textShadow:
+                            asset.change_pct >= 0
+                              ? "0 0 8px rgba(57,255,20,0.45)"
+                              : "0 0 8px rgba(255,59,107,0.45)",
                         }}
                       >
                         {formatPercent(asset.change_pct, locale)}
@@ -842,7 +902,7 @@ export function DashboardShell() {
                   </div>
                 ))}
               </div>
-            </section>
+            </HudFrame>
           </aside>
         </section>
 
@@ -869,17 +929,28 @@ export function DashboardShell() {
             copy={marketCopy.leaderboard}
           />
 
-          <section className="rounded-2xl border px-6 py-6" style={panelStyle}>
+          <HudFrame className="cyber-clip border px-6 py-6" style={panelStyle}>
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[0.68rem] uppercase tracking-[0.28em]" style={kickerStyle}>
-                  {marketCopy.sections.strategyRack}
+                <p
+                  className="font-mono-data text-[0.66rem] uppercase tracking-[0.26em] neon-text-magenta"
+                >
+                  {`// ${marketCopy.sections.strategyRack}`}
                 </p>
-                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.015em]" style={titleStyle}>
+                <h2
+                  className="mt-3 text-2xl font-semibold tracking-[-0.015em]"
+                  style={titleStyle}
+                >
                   {marketCopy.hero.title}
                 </h2>
               </div>
-              <Bot className="h-5 w-5" style={{ color: "var(--theme-accent-3)" }} />
+              <Cpu
+                className="h-5 w-5"
+                style={{
+                  color: "var(--theme-accent-3)",
+                  filter: "drop-shadow(0 0 8px rgba(57,255,20,0.7))",
+                }}
+              />
             </div>
             <div className="mt-6 divide-y border-t" style={{ borderColor: "var(--theme-panel-border)" }}>
               {strategyOptions.map((strategyOption) => {
@@ -894,12 +965,27 @@ export function DashboardShell() {
                         <p className="text-[1.02rem] font-semibold" style={titleStyle}>
                           {copy.label}
                         </p>
-                        <p className="mt-1 text-[0.85rem]" style={mutedStyle}>{copy.style}</p>
+                        <p
+                          className="mt-1 font-mono-data text-[0.82rem] uppercase tracking-[0.14em]"
+                          style={mutedStyle}
+                        >
+                          {copy.style}
+                        </p>
                       </div>
-                      <span className="text-[0.68rem] uppercase tracking-[0.22em]" style={kickerStyle}>
+                      <span
+                        className="font-mono-data text-[0.66rem] uppercase tracking-[0.2em]"
+                        style={{
+                          color: strategyOption.disabled
+                            ? "var(--theme-copy-faint)"
+                            : "var(--theme-accent-3)",
+                          textShadow: strategyOption.disabled
+                            ? "none"
+                            : "0 0 8px rgba(57,255,20,0.5)",
+                        }}
+                      >
                         {strategyOption.disabled
-                          ? marketCopy.cards.waiting
-                          : marketCopy.cards.available}
+                          ? `[${marketCopy.cards.waiting}]`
+                          : `[${marketCopy.cards.available}]`}
                       </span>
                     </div>
                     <p className="mt-3 max-w-[36ch] text-[0.9rem] leading-[1.6]" style={bodyStyle}>
@@ -909,11 +995,111 @@ export function DashboardShell() {
                 );
               })}
             </div>
-          </section>
+          </HudFrame>
         </section>
 
       </div>
     </main>
+  );
+}
+
+function CyberTag({
+  children,
+  tone = "default",
+}: {
+  children: ReactNode;
+  tone?: "default" | "active";
+}) {
+  if (tone === "active") {
+    return (
+      <span
+        className="cyber-clip border px-3 py-1.5 neon-text-magenta"
+        style={{
+          borderColor: "var(--theme-chip-active-border)",
+          background: "var(--theme-chip-active)",
+        }}
+      >
+        {`[ ${children} ]`}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="cyber-clip border px-3 py-1.5"
+      style={{
+        borderColor: "var(--theme-chip-border)",
+        background: "var(--theme-chip)",
+        color: "var(--theme-copy)",
+      }}
+    >
+      {`[ ${children} ]`}
+    </span>
+  );
+}
+
+function SystemStatusBar({
+  isRefreshing,
+  lastUpdatedLabel,
+  symbol,
+  source,
+  timeframe,
+}: {
+  isRefreshing: boolean;
+  lastUpdatedLabel: string | null;
+  symbol: string;
+  source: SourceId;
+  timeframe: Timeframe;
+}) {
+  const segments = [
+    `SYS:NEON-GRID v0.4`,
+    `UPLINK:${source.toUpperCase()}`,
+    `PAIR:${symbol}`,
+    `TF:${timeframe.toUpperCase()}`,
+    isRefreshing ? `STATE:SYNCING…` : `STATE:LOCKED`,
+    lastUpdatedLabel ? `LAST:${lastUpdatedLabel}` : `LAST:--:--:--`,
+    `MEM:OK`,
+    `CPU:1.42GHz`,
+    `LATENCY:14ms`,
+    `POSITION:READ-ONLY`,
+  ];
+  const repeated = [...segments, ...segments, ...segments];
+
+  return (
+    <div
+      className="relative overflow-hidden border-y font-mono-data text-[0.7rem] uppercase tracking-[0.2em]"
+      style={{
+        borderColor: "var(--theme-panel-border)",
+        background:
+          "linear-gradient(90deg, rgba(8,2,18,0.92) 0%, rgba(20,6,36,0.78) 50%, rgba(8,2,18,0.92) 100%)",
+        color: "var(--theme-copy-soft)",
+      }}
+    >
+      <div className="flex items-center gap-3 px-4 py-1.5">
+        <span
+          className="inline-flex items-center gap-1.5 neon-text-acid"
+          aria-hidden
+        >
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{
+              background: "var(--theme-accent-3)",
+              boxShadow: "0 0 8px rgba(57,255,20,0.9)",
+            }}
+          />
+          ONLINE
+        </span>
+        <span style={{ color: "var(--theme-panel-border-strong)" }}>│</span>
+        <div className="flex-1 overflow-hidden">
+          <div className="ticker-track">
+            {repeated.map((seg, idx) => (
+              <span key={`${seg}-${idx}`} className="px-6">
+                {seg}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

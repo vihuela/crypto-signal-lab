@@ -3,6 +3,7 @@
 import { Activity, Database } from "lucide-react";
 
 import { formatCompactUsd, formatPlainNumber } from "@/features/dashboard/formatters";
+import { HudFrame } from "@/features/dashboard/components/hud-frame";
 import type { DashboardTheme } from "@/features/dashboard/themes/types";
 import type {
   FactorId,
@@ -64,36 +65,48 @@ export function SignalFactorsPanel({
     diagnostics.core_long_count >= diagnostics.resonance_threshold;
 
   return (
-    <section
-      className="rounded-2xl border px-6 py-6"
+    <HudFrame
+      accent="cyan"
+      className="cyber-clip border px-6 py-6"
       style={{
         borderColor: "var(--theme-panel-border)",
         background: "var(--theme-panel)",
         boxShadow: "var(--theme-shadow)",
       }}
-      data-theme={theme.id}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div data-theme={theme.id} className="flex items-start justify-between gap-4">
         <div>
           <p
-            className="text-[0.68rem] uppercase tracking-[0.28em]"
-            style={{ color: "var(--theme-copy-faint)" }}
+            className="font-mono-data text-[0.66rem] uppercase tracking-[0.26em] neon-text-cyan"
           >
-            {sectionLabel}
+            {`// ${sectionLabel}`}
           </p>
           <h2
-            className="mt-3 text-2xl font-semibold tracking-[-0.015em]"
+            className="mt-3 font-mono-data text-3xl font-semibold tracking-[-0.015em] neon-text"
             style={{ color: "var(--theme-title)" }}
           >
             {diagnostics.core_long_count} / {diagnostics.core_factor_count}
           </h2>
-          <p className="mt-2 text-[0.92rem]" style={{ color: "var(--theme-copy)" }}>
-            {resonanceReady ? copy.ready : copy.standby}
+          <p
+            className="mt-2 font-mono-data text-[0.84rem] uppercase tracking-[0.16em]"
+            style={{
+              color: resonanceReady
+                ? "var(--theme-accent-3)"
+                : "var(--theme-copy-soft)",
+              textShadow: resonanceReady
+                ? "0 0 10px rgba(57,255,20,0.55)"
+                : "none",
+            }}
+          >
+            {resonanceReady ? `[ ${copy.ready} ]` : `[ ${copy.standby} ]`}
           </p>
         </div>
         <Activity
           className="mt-1 h-5 w-5"
-          style={{ color: "var(--theme-accent)" }}
+          style={{
+            color: "var(--theme-accent-2)",
+            filter: "drop-shadow(0 0 8px rgba(0,240,255,0.7))",
+          }}
         />
       </div>
 
@@ -125,7 +138,7 @@ export function SignalFactorsPanel({
       </div>
 
       <div
-        className="mt-6 rounded-xl border px-4 py-3"
+        className="mt-6 cyber-clip border px-4 py-3"
         style={{
           borderColor: "var(--theme-panel-border)",
           background: "var(--theme-panel-muted)",
@@ -218,16 +231,27 @@ export function SignalFactorsPanel({
 
                 <div className="text-right">
                   <p
-                    className="text-[0.98rem] font-semibold tabular-nums"
-                    style={{ color: "var(--theme-title)" }}
+                    className="font-mono-data text-[1.02rem] font-semibold tabular-nums"
+                    style={{
+                      color: "var(--theme-title)",
+                      textShadow:
+                        status === "bullish"
+                          ? "0 0 8px rgba(57,255,20,0.4)"
+                          : status === "defensive"
+                            ? "0 0 8px rgba(255,59,107,0.4)"
+                            : "none",
+                    }}
                   >
                     {formatFactorValue(factor, locale, copy)}
                   </p>
                   <p
-                    className="mt-2 text-[0.78rem] uppercase tracking-[0.18em]"
-                    style={{ color: statusColor }}
+                    className="mt-2 font-mono-data text-[0.74rem] uppercase tracking-[0.2em]"
+                    style={{
+                      color: statusColor,
+                      textShadow: `0 0 8px ${statusColor}`,
+                    }}
                   >
-                    {statusLabel(factor.factor_id, factor.value, status, copy)}
+                    {`[ ${statusLabel(factor.factor_id, factor.value, status, copy)} ]`}
                   </p>
                 </div>
               </div>
@@ -235,7 +259,7 @@ export function SignalFactorsPanel({
           );
         })}
       </div>
-    </section>
+    </HudFrame>
   );
 }
 
@@ -257,22 +281,32 @@ function SummaryPill({
         ? "var(--theme-negative)"
         : "var(--theme-copy-strong)";
 
+  const toneGlow =
+    tone === "bullish"
+      ? "0 0 10px rgba(57,255,20,0.5)"
+      : tone === "defensive"
+        ? "0 0 10px rgba(255,59,107,0.5)"
+        : "none";
+
   return (
     <div
-      className="rounded-xl border px-4 py-3"
+      className="cyber-clip border px-4 py-3"
       style={{
         borderColor: "var(--theme-panel-border)",
         background: "var(--theme-panel-muted)",
+        borderLeft: `2px solid ${toneColor}`,
       }}
       data-theme={theme.id}
     >
       <p
-        className="text-[0.72rem] uppercase tracking-[0.22em]"
-        style={{ color: "var(--theme-copy-faint)" }}
+        className="font-mono-data text-[0.66rem] uppercase tracking-[0.22em] neon-text-cyan"
       >
-        {label}
+        {`> ${label}`}
       </p>
-      <p className="mt-2 text-[1.05rem] font-semibold" style={{ color: toneColor }}>
+      <p
+        className="mt-2 font-mono-data text-[1.15rem] font-semibold tabular-nums"
+        style={{ color: toneColor, textShadow: toneGlow }}
+      >
         {value}
       </p>
     </div>
