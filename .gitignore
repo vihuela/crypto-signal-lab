@@ -26,3 +26,5 @@ apps/api/.pytest_cache/
 
 postgres-data/
 user_data/
+
+.claude/

@@ -3,7 +3,7 @@ from typing import Final
 SUPPORTED_SOURCES: Final[dict[str, dict[str, str]]] = {
     "binance-spot": {
         "label": "Binance Spot",
-        "base_url": "https://api.binance.com",
+        "base_url": "https://data-api.binance.vision",
     },
     "bybit-spot": {
         "label": "Bybit Spot",
